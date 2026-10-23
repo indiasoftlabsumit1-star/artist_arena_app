@@ -5,6 +5,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:artist_arena_app/Models/commentModel.dart';
+import 'package:artist_arena_app/Models/feedModel.dart';
+import 'package:artist_arena_app/Models/likeModel,dart.dart';
 import 'package:artist_arena_app/Models/profileModel.dart';
 import 'package:artist_arena_app/Models/sendOtpModel.dart';
 import 'package:artist_arena_app/Models/signUpModel.dart';
@@ -275,5 +278,111 @@ Future<SendOtpModel> resendOtp({
     throw Exception(data['message']??"failed to resend the otp");
   }
 }
+
+  Future<FeedModel>  getFeed({
+  int page=1,
+    int followingOnly=0,
+    int perPage=10,
+    String sort='recent',
+
+    required String token
+})async
+  {
+
+    final uri=  Uri.parse(Apiurl.feed).replace(
+      queryParameters: {
+        'sort':sort,
+        'following_only':followingOnly.toString(),
+        'per_page':perPage.toString(),
+        'page':page.toString()
+      }
+    );
+
+    final response =await http.get(uri,
+    headers: {
+      "Accept":"application/json",
+      "Authorization": "Bearer $token",
+    }
+    );
+
+    print('feed api response status code : ${response.statusCode}');
+    print('feed api response body : ${response.body}');
+
+    final data=jsonDecode(response.body);
+    if(response.statusCode==200){
+      return  FeedModel.fromJson(data);
+    }
+    else{
+      throw Exception(data['message']??'failed to load feed api ');
+    }
+  }
+
+  Future<CommentListModel> getComment({
+  required String token,
+    required int postId,
+    int page=1,
+
+  })async{
+
+
+  final uri=Uri.parse(Apiurl.comment(postId)).replace(
+    queryParameters: {
+      'page':page.toString()
+    }
+  );
+
+  final response=await http.get(uri,
+
+  headers: {
+    "Accept":"application/json",
+    "Authorization": "Bearer $token",
+  }
+  );
+
+  print("comment api response api status code : ${response.statusCode}");
+  print("comment api response  body :${response.body}");
+
+
+  final data=jsonDecode(response.body);
+  if(response.statusCode==200){
+    return CommentListModel.fromJson(data);
+  }
+  else{
+    throw Exception(data['message']??'failed to load a comment');
+  }
+  }
+
+
+  Future<LikeListModel>  getLikes({
+  required String token,
+  required int postId,
+    int page=1
+})async{
+
+  final uri= Uri.parse(Apiurl.likes(postId)).replace(
+    queryParameters: {
+      'page':page.toString()
+    }
+  );
+
+  final response=await http.get(uri,
+
+  headers: {
+    "Accept":"application/json",
+    "Authorization": "Bearer $token",
+  }
+  );
+
+  print(" likes api response status code :${response.statusCode}");
+  print('likes api response body : ${response.body}');
+
+  final data=jsonDecode(response.body);
+  if(response.statusCode==200){
+    return LikeListModel.fromJson(data);
+  }
+  else{
+    throw Exception(data['message']??'failed to load a likes');
+  }
+  }
 
 }

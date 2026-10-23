@@ -4,6 +4,7 @@
 import 'dart:math';
 
 import 'package:artist_arena_app/Controllers/auth_controller.dart';
+import 'package:artist_arena_app/Controllers/feed_controller.dart';
 import 'package:artist_arena_app/Controllers/home_controller.dart';
 import 'package:artist_arena_app/Controllers/profile_controller.dart';
 import 'package:artist_arena_app/Screens/my_story_screen.dart';
@@ -33,11 +34,14 @@ class _HomeScreenState extends State<HomeScreen> {
   HomeController homeController = Get.put(HomeController());
   final authController=Get.find<AuthController>();
 final profileController=Get.put(ProfileController());
+  final FeedController feedController=Get.put(FeedController());
+
 
 @override
   void initState() {
     // TODO: implement initState
   profileController.getProfile();
+  feedController.getFeed();
     super.initState();
   }
   @override
@@ -181,6 +185,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
+
   final List<Map<String,String>>   homeStory=[
     {
       'storyimg':'assets/images/profileimg.webp'
@@ -267,145 +272,164 @@ class _HomeState extends State<Home> {
         return SizedBox(
           height: 45.h,
           width: double.infinity,
-          child: Column(
-            children: [
+          child: Obx(
+            (){
+              return feedController.loading.value?Center(child: CircularProgressIndicator())
 
-              // Header
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 3.w,
-                  vertical: 1.h,
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      'Comments',
-                      style: Appthemestyle.poppins(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
+
+                  :
+              Column(
+                children: [
+
+                  // Header
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 3.w,
+                      vertical: 1.h,
                     ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Comments',
+                          style: Appthemestyle.poppins(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
 
-                    const Spacer(),
+                        const Spacer(),
 
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          child: Icon(
+                            Icons.close,
+                            size: 5.w,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Divider(
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ),
+
+                  // Comments
+                  feedController.commentList.isEmpty?Align(alignment: Alignment.center,child: Text('No Comment'),):Expanded(
+                    child: ListView.builder(
+                      itemCount: feedController.commentList.length,
+                      itemBuilder: (context, index) {
+                        final comment = feedController.commentList[index];
+
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 3.w,
+                            vertical: 1.h,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+
+                              // Profile image
+                              ClipOval(
+                                child: comment.user.avatarUrl == null ||
+                                    comment.user.avatarUrl!.isEmpty
+                                    ? Icon(
+                                  Icons.person,
+                                  size: 9.w,
+                                )
+                                    : Image.network(
+                                  comment.user.avatarUrl!,
+                                  width: 9.w,
+                                  height: 9.w,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.person,
+                                      size: 9.w,
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 2.w),
+
+                              // Name + comment
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      comment.user.name,
+                                      style: Appthemestyle.poppins(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+
+                                    Text(
+                                      comment.comment,
+                                      style: Appthemestyle.poppins(
+                                        fontSize: 14.sp,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
                       },
-                      child: Icon(
-                        Icons.close,
-                        size: 5.w,
-                      ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
-              Divider(
-                height: 1,
-                color: Colors.grey.shade300,
-              ),
-
-              // Comments
-              Expanded(
-                child: ListView.builder(
-                  itemCount: comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = comments[index];
-
-                    return Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 3.w,
-                        vertical: 1.h,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                          // Profile image
-                          ClipOval(
-                            child: Image.asset(
-                              comment['image']!,
-                              width: 9.w,
-                              height: 9.w,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-
-                          SizedBox(width: 2.w),
-
-                          // Name + comment
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  comment['name']!,
-                                  style: Appthemestyle.poppins(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-
-                                Text(
-                                  comment['comment']!,
-                                  style: Appthemestyle.poppins(
-                                    fontSize: 14.sp,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              // Comment input
-              // Container(
-              //   padding: EdgeInsets.symmetric(
-              //     horizontal: 3.w,
-              //     vertical: 1.h,
-              //   ),
-              //   decoration: BoxDecoration(
-              //     border: Border(
-              //       top: BorderSide(
-              //         color: Colors.grey.shade300,
-              //       ),
-              //     ),
-              //   ),
-              //   child: Row(
-              //     children: [
-              //
-              //       Expanded(
-              //         child: TextField(
-              //           decoration: InputDecoration(
-              //             hintText: 'Add a comment...',
-              //             hintStyle: Appthemestyle.poppins(
-              //               fontSize: 8.sp,
-              //               color: Colors.grey,
-              //             ),
-              //             border: InputBorder.none,
-              //           ),
-              //         ),
-              //       ),
-              //
-              //       Text(
-              //         'Send',
-              //         style: Appthemestyle.poppins(
-              //           fontSize: 8.sp,
-              //           fontWeight: FontWeight.w500,
-              //           color: AppColores.custtombtnColor,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-            ],
+                  // Comment input
+                  // Container(
+                  //   padding: EdgeInsets.symmetric(
+                  //     horizontal: 3.w,
+                  //     vertical: 1.h,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     border: Border(
+                  //       top: BorderSide(
+                  //         color: Colors.grey.shade300,
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   child: Row(
+                  //     children: [
+                  //
+                  //       Expanded(
+                  //         child: TextField(
+                  //           decoration: InputDecoration(
+                  //             hintText: 'Add a comment...',
+                  //             hintStyle: Appthemestyle.poppins(
+                  //               fontSize: 8.sp,
+                  //               color: Colors.grey,
+                  //             ),
+                  //             border: InputBorder.none,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //
+                  //       Text(
+                  //         'Send',
+                  //         style: Appthemestyle.poppins(
+                  //           fontSize: 8.sp,
+                  //           fontWeight: FontWeight.w500,
+                  //           color: AppColores.custtombtnColor,
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                ],
+              );
+            },
           ),
         );
       },
@@ -460,79 +484,94 @@ class _HomeState extends State<Home> {
         return SizedBox(
           height: 45.h,
           width: double.infinity,
-          child: Column(
-            children: [
+          child: Obx(
+            (){
+              return feedController.loading.value?Center(child: CircularProgressIndicator(),):Column(
 
-              // Header
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 3.w,
-                  vertical: 1.h,
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      'Like',
-                      style: Appthemestyle.poppins(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
+                children: [
+
+                  // Header
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 3.w,
+                      vertical: 1.h,
                     ),
-
-                    const Spacer(),
-
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Icon(
-                        Icons.close,
-                        size: 5.w,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Divider(
-                height: 1,
-                color: Colors.grey.shade300,
-              ),
-
-              // Comments
-              Expanded(
-                child: ListView.builder(
-                  itemCount: like.length,
-                  itemBuilder: (context, index) {
-                    final comment = like[index];
-
-                    return Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 3.w,
-                        vertical: 1.h,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-
-                          // Profile image
-                          ClipOval(
-                            child: Image.asset(
-                              comment['image']!,
-                              width: 9.w,
-                              height: 9.w,
-                              fit: BoxFit.cover,
-                            ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Like',
+                          style: Appthemestyle.poppins(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
                           ),
+                        ),
 
-                          SizedBox(width: 2.w),
+                        const Spacer(),
 
-                          // Name + comment
-                          Expanded(
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          child: Icon(
+                            Icons.close,
+                            size: 5.w,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                               child: Text(
-                                  comment['name']!,
+                  Divider(
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ),
+
+                  // Comments
+                  feedController.likeItem.isEmpty?Align(alignment: AlignmentGeometry.bottomCenter,child: Text(" No Likes"),):  Expanded(
+                    child: ListView.builder(
+                      itemCount: feedController.likeItem.length,
+                      itemBuilder: (context, index) {
+                        final like = feedController.likeItem[index];
+
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 3.w,
+                            vertical: 1.h,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+
+                              // Profile image
+                              ClipOval(
+                                child: like.avatarUrl == null ||
+                                    like.avatarUrl!.isEmpty
+                                    ? Icon(
+                                  Icons.person,
+                                  size: 9.w,
+                                )
+                                    : Image.network(
+                                  like.avatarUrl!,
+                                  width: 9.w,
+                                  height: 9.w,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.person,
+                                      size: 9.w,
+                                    );
+                                  },
+                                ),
+                              ),
+
+                              SizedBox(width: 2.w),
+
+                              // Name + comment
+                              Expanded(
+
+                                child: Text(
+                                  like.name,
                                   style: Appthemestyle.poppins(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.w600,
@@ -542,80 +581,85 @@ class _HomeState extends State<Home> {
 
 
 
-                          ),
-                          SizedBox(width: 2.w),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 4.w,
-                              vertical: 0.7.h,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: AppColores.custtombtnColor,
                               ),
-                              borderRadius: BorderRadius.circular(20.sp),
-                            ),
-                            child: Text(
-                              'Follow',
-                              style: Appthemestyle.poppins(
-                                fontSize: 12.sp,
-                                color: AppColores.custtombtnColor,
+                              SizedBox(width: 2.w),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 4.w,
+                                  vertical: 0.7.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: AppColores.custtombtnColor,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20.sp),
+                                ),
+                                child: Text(
+                                  'Follow',
+                                  style: Appthemestyle.poppins(
+                                    fontSize: 12.sp,
+                                    color: AppColores.custtombtnColor,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
+                        );
+                      },
+                    ),
+                  ),
 
-              // Comment input
-              // Container(
-              //   padding: EdgeInsets.symmetric(
-              //     horizontal: 3.w,
-              //     vertical: 1.h,
-              //   ),
-              //   decoration: BoxDecoration(
-              //     border: Border(
-              //       top: BorderSide(
-              //         color: Colors.grey.shade300,
-              //       ),
-              //     ),
-              //   ),
-              //   child: Row(
-              //     children: [
-              //
-              //       Expanded(
-              //         child: TextField(
-              //           decoration: InputDecoration(
-              //             hintText: 'Add a comment...',
-              //             hintStyle: Appthemestyle.poppins(
-              //               fontSize: 8.sp,
-              //               color: Colors.grey,
-              //             ),
-              //             border: InputBorder.none,
-              //           ),
-              //         ),
-              //       ),
-              //
-              //       Text(
-              //         'Send',
-              //         style: Appthemestyle.poppins(
-              //           fontSize: 8.sp,
-              //           fontWeight: FontWeight.w500,
-              //           color: AppColores.custtombtnColor,
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-            ],
+                  // Comment input
+                  // Container(
+                  //   padding: EdgeInsets.symmetric(
+                  //     horizontal: 3.w,
+                  //     vertical: 1.h,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     border: Border(
+                  //       top: BorderSide(
+                  //         color: Colors.grey.shade300,
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   child: Row(
+                  //     children: [
+                  //
+                  //       Expanded(
+                  //         child: TextField(
+                  //           decoration: InputDecoration(
+                  //             hintText: 'Add a comment...',
+                  //             hintStyle: Appthemestyle.poppins(
+                  //               fontSize: 8.sp,
+                  //               color: Colors.grey,
+                  //             ),
+                  //             border: InputBorder.none,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //
+                  //       Text(
+                  //         'Send',
+                  //         style: Appthemestyle.poppins(
+                  //           fontSize: 8.sp,
+                  //           fontWeight: FontWeight.w500,
+                  //           color: AppColores.custtombtnColor,
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                ],
+              );
+            },
           ),
         );
       },
     );
-  }@override
+  }
+
+  final feedController=Get.find<FeedController>();
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -886,215 +930,243 @@ class _HomeState extends State<Home> {
                   ),
 
                   // 3. Optimized Posts Feed using SliverList
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                        final post = homePosts[index];
-                        return Container(
-                          margin: EdgeInsets.only(bottom: 2.h),
-                          color: Colors.white,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Post Header
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 3.w,
-                                  vertical: 1.h,
-                                ),
-                                child: Row(
-                                  children: [
-                                    ProfileContainerWidget(
-                                      img: post['profileImg']!,
-                                      width: width >= 600 ? 5.w : 7.w,
-                                      height: width >= 600 ? 5.w : 7.w,
+                  Obx(
+                  ()=> SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                            final post=feedController.feedList[index];
+                        return  Container(
+                              margin: EdgeInsets.only(bottom: 2.h),
+                              color: Colors.white,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Post Header
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 3.w,
+                                      vertical: 1.h,
                                     ),
-                                    SizedBox(width: 2.w),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            post['username']!,
+                                    child: Row(
+                                      children: [
+                                        ProfileContainerWidget(
+                                          imageUrl: post.user.avatarUrl,
+                                          width: width >= 600 ? 5.w : 7.w,
+                                          height: width >= 600 ? 5.w : 7.w,
+                                          icon: post.user.avatarUrl==null?'person':null,
+                                        ),
+                                        SizedBox(width: 2.w),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                               post.user.name,
+                                                style: Appthemestyle.poppins(
+                                                  fontSize: 14.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              Text(
+                                                post.user.category!,
+                                                style: Appthemestyle.poppins(
+                                                  fontSize: 12.sp,
+                                                  color: const Color(0xff666666),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                    
+                                  // Post Image
+                                  if (post.media.isNotEmpty)
+                                  SizedBox(
+                                    width: double.infinity,
+
+                                    child:
+                                      Image.network(
+                                        post.media.first.url,
+                                              width: double.infinity,
+                                           fit: BoxFit.fitWidth,
+
+
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child; // Image load ho gayi
+                                          }
+
+                                          return SizedBox(
+                                            width: double.infinity,
+                                            height: 30.h,
+                                            child: const Center(
+                                              child: CircularProgressIndicator(),
+                                            ),
+                                          );
+                                        },
+
+                                        errorBuilder: (context, error, stackTrace) {
+                                           return const SizedBox.shrink();
+                                           },
+                                            ),
+                                  ),
+                    
+                                  // Like / Comment / Share
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 3.w.clamp(10.0, 20.0),
+                                      vertical: 1.h,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            feedController.getLikes(post.id);
+                                            _showLikeBottomSheet(context);
+                                          },
+                                          child: Icon(
+                                            Icons.favorite_outline,
+                                            color: Colors.black,
+                                            size: 20.sp.clamp(18.0, 30.0),
+                                          ),
+                                        ),
+                                        SizedBox(width: 3.w.clamp(2.0, 30.0)),
+                                        GestureDetector(
+                                          onTap: () {
+                                            feedController.getComment(post.id);
+                                            _showCommentsBottomSheet(context);
+                                          },
+                                          child: Icon(
+                                            Icons.chat_bubble_outline,
+                                            color: Colors.black,
+                                            size: 20.sp.clamp(18.0, 30.0),
+                                          ),
+                                        ),
+                                        SizedBox(width: 3.w.clamp(2.0, 30.0)),
+                                        Icon(
+                                          Icons.share_outlined,
+                                          color: Colors.black,
+                                          size: 20.sp.clamp(18.0, 30.0),
+                                        ),
+                                        const Spacer(),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 4.w,
+                                            vertical: 0.7.h,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: AppColores.custtombtnColor,
+                                            ),
+                                            borderRadius: BorderRadius.circular(20.sp),
+                                          ),
+                                          child: Text(
+                                            'Follow',
                                             style: Appthemestyle.poppins(
-                                              fontSize: 14.sp,
+                                              fontSize: 12.sp,
+                                              color: AppColores.custtombtnColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                    
+                                  // Likes Count
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
+                                    child: Text(
+                                      'Likes ${post.likesCount}',
+                                      style: Appthemestyle.poppins(
+                                        fontSize: 14.sp.clamp(12.0, 14.0),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 0.8.h),
+                    
+                                  // Caption
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
+                                    child: RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: post.user.name,
+                                            style: Appthemestyle.poppins(
+                                              fontSize: 14.sp.clamp(12.0, 14.0),
                                               fontWeight: FontWeight.w600,
                                               color: Colors.black,
                                             ),
                                           ),
-                                          Text(
-                                            post['category']!,
+                                          TextSpan(
+                                            text: '  ${post.caption}',
                                             style: Appthemestyle.poppins(
-                                              fontSize: 12.sp,
-                                              color: const Color(0xff666666),
+                                              fontSize: 14.sp.clamp(12.0, 14.0),
+                                              color: Colors.black,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-
-                              // Post Image
-                              SizedBox(
-                                width: double.infinity,
-                                child: Image.asset(
-                                  post['postImg']!,
-                                  width: double.infinity,
-                                  fit: BoxFit.fitWidth,
-                                ),
-                              ),
-
-                              // Like / Comment / Share
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 3.w.clamp(10.0, 20.0),
-                                  vertical: 1.h,
-                                ),
-                                child: Row(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        _showLikeBottomSheet(context);
-                                      },
-                                      child: Icon(
-                                        Icons.favorite_outline,
-                                        color: Colors.black,
-                                        size: 20.sp.clamp(18.0, 30.0),
-                                      ),
-                                    ),
-                                    SizedBox(width: 3.w.clamp(2.0, 30.0)),
-                                    GestureDetector(
-                                      onTap: () {
-                                        _showCommentsBottomSheet(context);
-                                      },
-                                      child: Icon(
-                                        Icons.chat_bubble_outline,
-                                        color: Colors.black,
-                                        size: 20.sp.clamp(18.0, 30.0),
-                                      ),
-                                    ),
-                                    SizedBox(width: 3.w.clamp(2.0, 30.0)),
-                                    Icon(
-                                      Icons.share_outlined,
-                                      color: Colors.black,
-                                      size: 20.sp.clamp(18.0, 30.0),
-                                    ),
-                                    const Spacer(),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 4.w,
-                                        vertical: 0.7.h,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: AppColores.custtombtnColor,
-                                        ),
-                                        borderRadius: BorderRadius.circular(20.sp),
-                                      ),
-                                      child: Text(
-                                        'Follow',
-                                        style: Appthemestyle.poppins(
-                                          fontSize: 12.sp,
-                                          color: AppColores.custtombtnColor,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Likes Count
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
-                                child: Text(
-                                  'Likes ${post['likes']}',
-                                  style: Appthemestyle.poppins(
-                                    fontSize: 14.sp.clamp(12.0, 14.0),
-                                    fontWeight: FontWeight.w500,
                                   ),
-                                ),
-                              ),
-                              SizedBox(height: 0.8.h),
-
-                              // Caption
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
-                                child: RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: post['username']!,
-                                        style: Appthemestyle.poppins(
-                                          fontSize: 14.sp.clamp(12.0, 14.0),
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: '  ${post['caption']}',
-                                        style: Appthemestyle.poppins(
-                                          fontSize: 14.sp.clamp(12.0, 14.0),
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 0.8.h),
-
-                              // Comments Summary
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
-                                child: Text(
-                                  'View all ${post['comments']} comments',
-                                  style: Appthemestyle.poppins(
-                                    fontSize: 14.sp.clamp(12.0, 14.0),
-                                    color: const Color(0xff777777),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 1.h),
-
-                              // Add Comment Row
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
-                                child: Row(
-                                  children: [
-                                    ProfileContainerWidget(
-                                      img: 'assets/images/profileimg.webp',
-                                      height: 5.w.clamp(30.0, 50.0),
-                                      width: 5.w.clamp(30.0, 50.0),
-                                    ),
-                                    SizedBox(width: 2.w),
-                                    Expanded(
-                                      child: Text(
-                                        'Add a comment...',
-                                        style: Appthemestyle.poppins(
-                                          fontSize: 14.sp.clamp(12.0, 14.0),
-                                          color: const Color(0xff999999),
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      'Send',
+                                  SizedBox(height: 0.8.h),
+                    
+                                  // Comments Summary
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
+                                    child: Text(
+                                      'View all ${post.commentsCount} comments',
                                       style: Appthemestyle.poppins(
                                         fontSize: 14.sp.clamp(12.0, 14.0),
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColores.custtombtnColor,
+                                        color: const Color(0xff777777),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  SizedBox(height: 1.h),
+                    
+                                  // Add Comment Row
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
+                                    child: Row(
+                                      children: [
+                                        ProfileContainerWidget(
+                                          img: 'assets/images/profileimg.webp',
+                                          height: 5.w.clamp(30.0, 50.0),
+                                          width: 5.w.clamp(30.0, 50.0),
+                                        ),
+                                        SizedBox(width: 2.w),
+                                        Expanded(
+                                          child: Text(
+                                            'Add a comment...',
+                                            style: Appthemestyle.poppins(
+                                              fontSize: 14.sp.clamp(12.0, 14.0),
+                                              color: const Color(0xff999999),
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          'Send',
+                                          style: Appthemestyle.poppins(
+                                            fontSize: 14.sp.clamp(12.0, 14.0),
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColores.custtombtnColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 1.5.h),
+                                ],
                               ),
-                              SizedBox(height: 1.5.h),
-                            ],
-                          ),
-                        );
-                      },
-                      childCount: homePosts.length,
+                            
+                          );
+                        },
+                        childCount: feedController.feedList.length,
+                      ),
                     ),
                   ),
                 ],

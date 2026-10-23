@@ -237,7 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                    ),textAlign: TextAlign.center,),
                                    SizedBox(height: 2.h,),
 
-                                   Text(profile!.mobile,style: Appthemestyle.poppins(
+                                   Text(profile?.mobile??' ',style: Appthemestyle.poppins(
                                        fontSize: 14.sp.clamp(12.0, 14.0)
                                    )),
                                    SizedBox(height: 3.h,),

@@ -15,6 +15,16 @@ class Apiurl {
 static const upload="${baseUrl}upload";
    static const update="${baseUrl}profile/update";
    static const resendOtp="${baseUrl}auth/resend-otp";
+   static const  feed = "${baseUrl}posts/feed";
+
+   static String comment(int postId){
+      return   '${baseUrl}posts/${postId}/comments';
+   }
+   static String likes(int postId){
+      return   '${baseUrl}posts/${postId}/likes';
+   }
+
+
 
 
 
