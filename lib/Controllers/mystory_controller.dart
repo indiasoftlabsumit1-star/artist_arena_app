@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:artist_arena_app/Controllers/profile_controller.dart';
 import 'package:camera/camera.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +16,8 @@ class MyStoryController extends GetxController {
   RxList<AssetEntity> recentImages = <AssetEntity>[].obs;
 
   List<CameraDescription> cameras = [];
+
+  final profileController=Get.find<ProfileController>();
 
   @override
   void onInit() {
@@ -223,23 +228,5 @@ class MyStoryController extends GetxController {
     }
   }
 
-  final ImagePicker picker = ImagePicker();
-  final Rxn<XFile> selectedMedia = Rxn<XFile>();
 
-  Future<void>pickFromGallery() async {
-    final XFile? file = await picker.pickMedia();
-
-    if (file == null) {
-      return;
-    }
-    selectedMedia.value = file;
-
-    // print("Selected file: ${file.path}");
-  }
-
-  @override
-  void onClose() {
-    cameraController?.dispose();
-    super.onClose();
-  }
 }

@@ -14,6 +14,8 @@ class ProfileController extends GetxController{
   RxInt selectedIndex = 0.obs;
 Rx<ProfileData?> profile=Rx<ProfileData?>(null);
 
+
+
     final RxBool profileLoading=false.obs;
 
 final Apiservice apiservice=Apiservice();
@@ -110,6 +112,7 @@ final Apiservice apiservice=Apiservice();
       print("update profile response : $response");
 
       getProfile();
+
       Get.snackbar(
         'Success',
         'Profile updated successfully',

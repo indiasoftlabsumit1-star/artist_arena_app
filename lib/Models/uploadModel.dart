@@ -16,7 +16,7 @@ class UploadFileModel {
 
   factory UploadFileModel.fromJson(Map<String, dynamic> json) {
     return UploadFileModel(
-      success: json['success'] ?? false,
+      success: json['status'] ?? false,
       message: json['message'] ?? '',
       data: json['data'] != null
           ? UploadFileData.fromJson(json['data'])

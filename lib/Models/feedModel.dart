@@ -53,9 +53,9 @@ class FeedItem {
   final int mediaCount;
   final String? thumbnailUrl;
   final FeedUser user;
-  final int likesCount;
-  final int commentsCount;
-  final bool isLiked;
+   int likesCount;
+   int commentsCount;
+   bool isLiked;
   final bool isMine;
   final bool canDelete;
   final bool isActive;
@@ -223,6 +223,31 @@ class FeedPagination {
       total: json['total'] ?? 0,
       lastPage: json['last_page'] ?? 1,
       hasMore: json['has_more'] ?? false,
+    );
+  }
+}
+
+
+class CreatePostModel {
+  final bool status;
+  final String message;
+  final FeedItem? data;
+
+  CreatePostModel({
+    required this.status,
+    required this.message,
+    this.data,
+  });
+
+  factory CreatePostModel.fromJson(Map<String, dynamic> json) {
+    return CreatePostModel(
+      status: json['status'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'] != null
+          ? FeedItem.fromJson(
+        json['data'] as Map<String, dynamic>,
+      )
+          : null,
     );
   }
 }

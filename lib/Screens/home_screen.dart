@@ -21,6 +21,7 @@ import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
 
 import '../Utils/appThemeStyle.dart';
+import '../Widgets/post_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -184,6 +185,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final TextEditingController commentController=TextEditingController();
 
 
   final List<Map<String,String>>   homeStory=[
@@ -252,7 +254,7 @@ class _HomeState extends State<Home> {
     },
   ];
 
-  void _showCommentsBottomSheet(BuildContext context) {
+  void _showCommentsBottomSheet(BuildContext context,int postId) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -278,157 +280,207 @@ class _HomeState extends State<Home> {
 
 
                   :
-              Column(
-                children: [
+              Stack(
+                children:[ Column(
+                  children: [
 
-                  // Header
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 3.w,
-                      vertical: 1.h,
+                    // Header
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 3.w,
+                        vertical: 1.h,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Comments',
+                            style: Appthemestyle.poppins(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          ),
+
+                          const Spacer(),
+
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Icon(
+                              Icons.close,
+                              size: 5.w,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Comments',
-                          style: Appthemestyle.poppins(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                          ),
-                        ),
 
-                        const Spacer(),
-
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: Icon(
-                            Icons.close,
-                            size: 5.w,
-                          ),
-                        ),
-                      ],
+                    Divider(
+                      height: 1,
+                      color: Colors.grey.shade300,
                     ),
-                  ),
 
-                  Divider(
-                    height: 1,
-                    color: Colors.grey.shade300,
-                  ),
+                    // Comments
+                    feedController.commentList.isEmpty?Align(alignment: Alignment.center,child: Text('No Comment'),):Expanded(
+                      child: ListView.builder(
+                        itemCount: feedController.commentList.length,
+                        itemBuilder: (context, index) {
+                          final comment = feedController.commentList[index];
 
-                  // Comments
-                  feedController.commentList.isEmpty?Align(alignment: Alignment.center,child: Text('No Comment'),):Expanded(
-                    child: ListView.builder(
-                      itemCount: feedController.commentList.length,
-                      itemBuilder: (context, index) {
-                        final comment = feedController.commentList[index];
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 3.w,
+                              vertical: 1.h,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
 
-                        return Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 3.w,
-                            vertical: 1.h,
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-
-                              // Profile image
-                              ClipOval(
-                                child: comment.user.avatarUrl == null ||
-                                    comment.user.avatarUrl!.isEmpty
-                                    ? Icon(
-                                  Icons.person,
-                                  size: 9.w,
-                                )
-                                    : Image.network(
-                                  comment.user.avatarUrl!,
-                                  width: 9.w,
-                                  height: 9.w,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.person,
-                                      size: 9.w,
-                                    );
-                                  },
+                                // Profile image
+                                ClipOval(
+                                  child: comment.user.avatarUrl == null ||
+                                      comment.user.avatarUrl!.isEmpty
+                                      ? Icon(
+                                    Icons.person,
+                                    size: 9.w,
+                                  )
+                                      : Image.network(
+                                    comment.user.avatarUrl!,
+                                    width: 9.w,
+                                    height: 9.w,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(
+                                        Icons.person,
+                                        size: 9.w,
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 2.w),
+                                SizedBox(width: 2.w),
 
-                              // Name + comment
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      comment.user.name,
-                                      style: Appthemestyle.poppins(
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.w600,
+                                // Name + comment
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        comment.user.name,
+                                        style: Appthemestyle.poppins(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    ),
 
-                                    Text(
-                                      comment.comment,
-                                      style: Appthemestyle.poppins(
-                                        fontSize: 14.sp,
-                                        color: Colors.black87,
+                                      Text(
+                                        comment.comment,
+                                        style: Appthemestyle.poppins(
+                                          fontSize: 14.sp,
+                                          color: Colors.black87,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
+
+
+                  ],
+                ),
+
+
 
                   // Comment input
-                  // Container(
-                  //   padding: EdgeInsets.symmetric(
-                  //     horizontal: 3.w,
-                  //     vertical: 1.h,
-                  //   ),
-                  //   decoration: BoxDecoration(
-                  //     border: Border(
-                  //       top: BorderSide(
-                  //         color: Colors.grey.shade300,
-                  //       ),
-                  //     ),
-                  //   ),
-                  //   child: Row(
-                  //     children: [
-                  //
-                  //       Expanded(
-                  //         child: TextField(
-                  //           decoration: InputDecoration(
-                  //             hintText: 'Add a comment...',
-                  //             hintStyle: Appthemestyle.poppins(
-                  //               fontSize: 8.sp,
-                  //               color: Colors.grey,
-                  //             ),
-                  //             border: InputBorder.none,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //
-                  //       Text(
-                  //         'Send',
-                  //         style: Appthemestyle.poppins(
-                  //           fontSize: 8.sp,
-                  //           fontWeight: FontWeight.w500,
-                  //           color: AppColores.custtombtnColor,
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
-                ],
-              );
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 3.w,
+                        vertical: 1.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.grey.shade300,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 18.sp,
+                            backgroundColor: Colors.grey.shade200,
+                            backgroundImage: const AssetImage(
+                              'assets/images/profileimg.webp',
+                            ),
+                          ),
+
+                          SizedBox(width: 2.w),
+
+                          Expanded(
+                            child: TextField(
+                              controller: commentController,
+                              decoration: InputDecoration(
+                                hintText: 'Add a comment...',
+                                hintStyle: Appthemestyle.poppins(
+                                  fontSize: 9.sp,
+                                  color: Colors.grey,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 3.w,
+                                  vertical: 1.h,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(25.sp),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(25.sp),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(25.sp),
+                                  borderSide: BorderSide(
+                                    color: AppColores.custtombtnColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(width: 2.w),
+
+                          GestureDetector(
+                            onTap: () {
+                             feedController.addComment(postId: postId, comment: commentController.text);
+                            },
+                            child: Text(
+                              'Send',
+                              style: Appthemestyle.poppins(
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColores.custtombtnColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+             ] );
             },
           ),
         );
@@ -461,7 +513,6 @@ class _HomeState extends State<Home> {
       'name': 'Alisa Hester liked your photo.',
     },
   ];
-
   void _showLikeBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -983,36 +1034,45 @@ class _HomeState extends State<Home> {
                                   ),
                     
                                   // Post Image
+                                  // Post Image / Video
                                   if (post.media.isNotEmpty)
-                                  SizedBox(
-                                    width: double.infinity,
+                                    Builder(
+                                      builder: (context) {
+                                        final media = post.media.first;
+                                        final isVideo = media.type.toLowerCase() == 'video';
 
-                                    child:
-                                      Image.network(
-                                        post.media.first.url,
-                                              width: double.infinity,
-                                           fit: BoxFit.fitWidth,
-
-
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child; // Image load ho gayi
-                                          }
-
-                                          return SizedBox(
-                                            width: double.infinity,
-                                            height: 30.h,
-                                            child: const Center(
-                                              child: CircularProgressIndicator(),
-                                            ),
+                                        if (isVideo) {
+                                          return FeedVideoPlayer(
+                                            videoUrl: media.url,
                                           );
-                                        },
+                                        }
 
-                                        errorBuilder: (context, error, stackTrace) {
-                                           return const SizedBox.shrink();
-                                           },
-                                            ),
-                                  ),
+                                        return SizedBox(
+                                          width: double.infinity,
+                                          child: Image.network(
+                                            media.url,
+                                            width: double.infinity,
+                                            fit: BoxFit.fitWidth,
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              }
+
+                                              return SizedBox(
+                                                width: double.infinity,
+                                                height: 30.h,
+                                                child: const Center(
+                                                  child: CircularProgressIndicator(),
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return const SizedBox.shrink();
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ),
                     
                                   // Like / Comment / Share
                                   Padding(
@@ -1024,12 +1084,20 @@ class _HomeState extends State<Home> {
                                       children: [
                                         GestureDetector(
                                           onTap: () {
-                                            feedController.getLikes(post.id);
-                                            _showLikeBottomSheet(context);
-                                          },
+                                            print('Favorite icon tapped: ${post.id}');
+
+                                            if (post.isLiked) {
+                                              feedController.unLike(post.id);
+                                            } else {
+                                              feedController.like(post.id);
+                                            }     },
                                           child: Icon(
-                                            Icons.favorite_outline,
-                                            color: Colors.black,
+                                            post.isLiked == true
+                                                ? Icons.favorite
+                                                : Icons.favorite_outline,
+                                            color: post.isLiked == true
+                                                ? Colors.red
+                                                : Colors.black,
                                             size: 20.sp.clamp(18.0, 30.0),
                                           ),
                                         ),
@@ -1037,7 +1105,7 @@ class _HomeState extends State<Home> {
                                         GestureDetector(
                                           onTap: () {
                                             feedController.getComment(post.id);
-                                            _showCommentsBottomSheet(context);
+                                            _showCommentsBottomSheet(context,post.id);
                                           },
                                           child: Icon(
                                             Icons.chat_bubble_outline,
@@ -1078,11 +1146,18 @@ class _HomeState extends State<Home> {
                                   // Likes Count
                                   Padding(
                                     padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
-                                    child: Text(
-                                      'Likes ${post.likesCount}',
-                                      style: Appthemestyle.poppins(
-                                        fontSize: 14.sp.clamp(12.0, 14.0),
-                                        fontWeight: FontWeight.w500,
+                                    child: InkWell(
+                                      onTap: (){
+                                        feedController.getLikes(post.id);
+                                        _showLikeBottomSheet(context);
+                                      },
+                                      child: Text(
+
+                                        'Likes ${post.likesCount}',
+                                        style: Appthemestyle.poppins(
+                                          fontSize: 14.sp.clamp(12.0, 14.0),
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -1118,11 +1193,17 @@ class _HomeState extends State<Home> {
                                   // Comments Summary
                                   Padding(
                                     padding: EdgeInsets.symmetric(horizontal: 3.w.clamp(10.0, 20.0)),
-                                    child: Text(
-                                      'View all ${post.commentsCount} comments',
-                                      style: Appthemestyle.poppins(
-                                        fontSize: 14.sp.clamp(12.0, 14.0),
-                                        color: const Color(0xff777777),
+                                    child: InkWell(
+                                      onTap: (){
+                                        feedController.getComment(post.id);
+                                        _showCommentsBottomSheet(context,post.id);
+                                      },
+                                      child: Text(
+                                        'View all ${post.commentsCount} comments',
+                                        style: Appthemestyle.poppins(
+                                          fontSize: 14.sp.clamp(12.0, 14.0),
+                                          color: const Color(0xff777777),
+                                        ),
                                       ),
                                     ),
                                   ),

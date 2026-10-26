@@ -18,12 +18,22 @@ static const upload="${baseUrl}upload";
    static const  feed = "${baseUrl}posts/feed";
 
    static String comment(int postId){
-      return   '${baseUrl}posts/${postId}/comments';
+      return   '${baseUrl}posts/$postId/comments';
    }
    static String likes(int postId){
-      return   '${baseUrl}posts/${postId}/likes';
+      return   '${baseUrl}posts/$postId/likes';
    }
 
+   static String like(int postId){
+      return   '${baseUrl}posts/$postId/like';
+   }
+   static String unLike(int postId){
+      return   '${baseUrl}posts/$postId/unlike';
+   }
+   static String addComment(int postId){
+      return   '${baseUrl}posts/$postId/comments';
+   }
+   static const  post = "${baseUrl}posts/create";
 
 
 

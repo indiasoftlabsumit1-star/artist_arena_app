@@ -5,7 +5,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:artist_arena_app/Models/addCommentModel.dart';
 import 'package:artist_arena_app/Models/commentModel.dart';
+import 'package:artist_arena_app/Models/favModel.dart';
 import 'package:artist_arena_app/Models/feedModel.dart';
 import 'package:artist_arena_app/Models/likeModel,dart.dart';
 import 'package:artist_arena_app/Models/profileModel.dart';
@@ -201,6 +203,50 @@ Future<UploadFileModel> uploadFile(String token, File file) async {
     throw Exception(data["message"] ?? "Failed to upload file");
   }
 }
+
+Future<UploadFileModel> uploadPostMedia(
+    String token,
+    File file,
+    ) async {
+  final request = http.MultipartRequest(
+    'POST',
+    Uri.parse(Apiurl.upload),
+  );
+
+  request.headers.addAll({
+    "Accept": "application/json",
+    "Authorization": "Bearer $token",
+  });
+
+  request.fields['folder'] = 'posts';
+
+  request.files.add(
+    await http.MultipartFile.fromPath(
+      'file',
+      file.path,
+    ),
+  );
+
+  final streamedResponse = await request.send();
+  final response = await http.Response.fromStream(
+    streamedResponse,
+  );
+
+  print("Post media upload status: ${response.statusCode}");
+  print("Post media upload body: ${response.body}");
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200 ||
+      response.statusCode == 201) {
+    return UploadFileModel.fromJson(data);
+  } else {
+    throw Exception(
+      data["message"] ?? "Failed to upload post media",
+    );
+  }
+}
+
 Future<ProfileData> updateProfile({
   required String fName,
   required String lName,
@@ -385,4 +431,113 @@ Future<SendOtpModel> resendOtp({
   }
   }
 
+
+  Future<LikeModel>  like({
+  required String token,
+    required int postId
+})async{
+     
+  final response=await http.post(Uri.parse(Apiurl.like(postId)),
+  headers: {
+    "Accept":"application/json",
+    "Authorization": "Bearer $token",
+  }
+  );
+  
+  
+  print("like api response status code   : ${response.statusCode}");
+  print("like api response body : ${response.body}");
+
+  final data=jsonDecode(response.body);
+  if(response.statusCode==200){
+    return LikeModel.fromJson(data);
+  }
+  else{
+    throw Exception(data['message']??'failed to like post');
+  }
+  }
+
+Future<LikeModel> unLike({
+  required String token,
+  required int postId,
+}) async {
+  final response = await http.post(
+    Uri.parse(Apiurl.unLike(postId)),
+    headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer $token",
+    },
+  );
+
+  print('Unlike API status code: ${response.statusCode}');
+  print('Unlike API response body: ${response.body}');
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200) {
+    return LikeModel.fromJson(data);
+  } else {
+    throw Exception(data['message'] ?? 'Failed to remove like');
+  }
+}
+Future<AddCommentModel>   addComment({
+  required String token,
+  required String comment,
+  required int postId,
+})async{
+
+  final response=await http.post(Uri.parse(Apiurl.addComment(postId)),
+
+  body: jsonEncode({
+    'comment':comment
+  }),
+    headers: {
+      "Accept":"application/json",
+      "Content-Type":"application/json",
+      "Authorization": "Bearer $token",
+    }
+  );
+  print("add comment api response status code :${response.statusCode}");
+  print("add comment api response body  :${response.body}");
+  final data=jsonDecode(response.body);
+
+  if(response.statusCode==201){
+    return   AddCommentModel.fromJson(data)    ;
+  }else{
+    throw Exception(data['message']??'failed to add comment');
+  }
+}
+
+
+
+Future<CreatePostModel> post({
+  required String token,
+  required String caption,
+  required List<String> media
+})async{
+
+  final response=await http.post(Uri.parse(Apiurl.post),
+    body: jsonEncode({
+      'caption':caption,
+      'media':media
+    }),
+    headers: {
+      "Accept":"application/json",
+      "Content-Type":"application/json",
+      "Authorization": "Bearer $token",
+    }
+  ) ;
+
+  print(" post api response status code : ${response.statusCode}");
+  print("post api response body :${response.body}");
+
+  final data=jsonDecode(response.body);
+
+  if(response.statusCode==201){
+    return CreatePostModel.fromJson(data);
+  }else{
+    throw Exception(data['message']??'failed to post');
+  }
+
+}
 }
