@@ -110,7 +110,12 @@ class MyStoryController extends GetxController {
 
     isCameraInitialized.value = false;
 
-    await cameraController?.dispose();
+    final oldController = cameraController;
+    cameraController = null;
+
+    if (oldController != null) {
+      await oldController.dispose();
+    }
 
     isFrontCamera.value = !isFrontCamera.value;
 
@@ -227,6 +232,21 @@ class MyStoryController extends GetxController {
       return null;
     }
   }
+
+  @override
+  void onClose() {
+    final controller = cameraController;
+
+    cameraController = null;
+    isCameraInitialized.value = false;
+
+    if (controller != null) {
+      controller.dispose();
+    }
+
+    super.onClose();
+  }
+
 
 
 }

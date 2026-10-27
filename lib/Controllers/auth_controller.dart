@@ -181,42 +181,58 @@ Future<void>  sendOtp({
     }
 }
 
-Future<void> otpVerify({
+    Future<void> otpVerify({
       required String mobile,
-  required String otp
-})async{
+      required String otp,
+    }) async {
+      if (loading.value) return;
 
-  if(loading.value)return;
-  loading.value=true;
+      loading.value = true;
 
-  try {
-    final response = await apiservice.otpVerify(otp: otp, mobile: mobile);
+      try {
+        final response = await apiservice.otpVerify(
+          otp: otp,
+          mobile: mobile,
+        );
 
-    if(response.data?.token!=null&&response.data!.token.isNotEmpty){
-      final pref=await SharedPreferences.getInstance();
-      await pref.setString('token', response.data!.token);
-      print("token saved success full");
+        if (!response.status) {
+          Get.snackbar('OTP', 'Please Enter Valid OTP');
+          return;
+        }
+
+        final token = response.data?.token;
+
+        if (token == null || token.trim().isEmpty) {
+          Get.snackbar(
+            'Login Failed',
+            'Authentication token was not received. Please try again.',
+          );
+          return;
+        }
+
+        final pref = await SharedPreferences.getInstance();
+        final saved = await pref.setString('token', token);
+
+        if (!saved) {
+          Get.snackbar(
+            'Login Failed',
+            'Unable to save your session. Please try again.',
+          );
+          return;
+        }
+
+        Get.offAll(() => HomeScreen());
+      } catch (e) {
+        print('OTP verification error: $e');
+
+        Get.snackbar(
+          'OTP Verification Failed',
+          'Something went wrong. Please try again.',
+        );
+      } finally {
+        loading.value = false;
+      }
     }
-
-    print("signup otp $response");
-    if (response.status) {
-      Get.offAll(() => HomeScreen());
-    }
-    else {
-      Get.snackbar("OTP", 'Please Enter Valid OTP');
-    }
-  }
-  catch (e) {
-    print("otp verify  error: $e");
-
-    Get.snackbar(
-      'otp verify Failed',
-      'Something went wrong. Please try again.',
-    );
-  } finally {
-    loading.value = false;
-  }
-}
 
 
 

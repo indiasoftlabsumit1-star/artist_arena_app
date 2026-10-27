@@ -19,7 +19,9 @@ class FeedVideoPlayer extends StatefulWidget {
 }
 
 class _FeedVideoPlayerState extends State<FeedVideoPlayer> {
-  late final VideoPlayerController _controller;
+
+  late VideoPlayerController _controller;
+  bool _isDisposed = false;
   bool _hasError = false;
 
   @override
@@ -33,15 +35,19 @@ class _FeedVideoPlayerState extends State<FeedVideoPlayer> {
     _initializeVideo();
   }
 
+
   Future<void> _initializeVideo() async {
     try {
       await _controller.initialize();
+
+      if (!mounted || _isDisposed) return;
       await _controller.setLooping(true);
+
+      if (!mounted || _isDisposed) return;
       await _controller.play();
 
-      if (mounted) {
-        setState(() {});
-      }
+      if (!mounted || _isDisposed) return;
+      setState(() {});
     } catch (e) {
       debugPrint('Feed video error: $e');
 
@@ -53,11 +59,14 @@ class _FeedVideoPlayerState extends State<FeedVideoPlayer> {
     }
   }
 
+
   @override
   void dispose() {
+    _isDisposed = true;
     _controller.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
