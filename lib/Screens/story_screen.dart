@@ -1,16 +1,22 @@
+
+
+
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
 
 import '../Utils/appThemeStyle.dart';
+
 class StoryScreen extends StatelessWidget {
   final String storyImage;
   final String storyName;
+  final String storyAvatar;
 
   const StoryScreen({
     super.key,
     required this.storyImage,
-    required this.storyName,
+    required this.storyName, required this.storyAvatar,
   });
 
   @override
@@ -18,20 +24,27 @@ class StoryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(storyImage),
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.high,
-            ),
-          ),
-
+        child: SizedBox.expand(
           child: Stack(
+            fit: StackFit.expand,
             children: [
+              // Story background image from API
+              Image.network(
+                storyImage,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/images/profileimg.webp',
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+
+              // Slight dark overlay for readable text
+              Container(
+                color: Colors.black.withOpacity(0.15),
+              ),
 
               // Top profile and name
               Positioned(
@@ -40,13 +53,20 @@ class StoryScreen extends StatelessWidget {
                 right: 3.w,
                 child: Row(
                   children: [
-
                     ClipOval(
-                      child: Image.asset(
-                        storyImage,
-                        width: 9.w,
-                        height: 9.w,
+                      child: Image.network(
+                        storyAvatar,
+                        width: 10.w,
+                        height: 10.w,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/images/profileimg.webp',
+                            width: 10.w,
+                            height: 10.w,
+                            fit: BoxFit.cover,
+                          );
+                        },
                       ),
                     ),
 
@@ -93,26 +113,20 @@ class StoryScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-
                       Expanded(
                         child: Text(
                           'Add a comment...',
                           style: Appthemestyle.poppins(
-                            color: Color(0xff999999),
+                            color: const Color(0xff999999),
                             fontSize: 14.sp,
                           ),
                         ),
                       ),
 
-                      SizedBox(
-                        height: double.infinity,
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: Icon(
-                            Icons.send,
-                            color: Colors.red,
-                          ),
-                        ),
+                      Icon(
+                        Icons.send,
+                        color: Colors.red,
+                        size: 5.w,
                       ),
                     ],
                   ),

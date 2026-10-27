@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:artist_arena_app/Controllers/auth_controller.dart';
 import 'package:artist_arena_app/Controllers/feed_controller.dart';
 import 'package:artist_arena_app/Controllers/home_controller.dart';
+import 'package:artist_arena_app/Controllers/mystory_controller.dart';
 import 'package:artist_arena_app/Controllers/profile_controller.dart';
 import 'package:artist_arena_app/Screens/my_story_screen.dart';
 import 'package:artist_arena_app/Screens/notification_screen.dart';
@@ -37,12 +38,15 @@ class _HomeScreenState extends State<HomeScreen> {
 final profileController=Get.put(ProfileController());
   final FeedController feedController=Get.put(FeedController());
 
+  final MyStoryController myStoryController=Get.put(MyStoryController());
+
 
 @override
   void initState() {
     // TODO: implement initState
   profileController.getProfile();
   feedController.getFeed();
+  myStoryController.fetchStories();
     super.initState();
   }
   @override
@@ -710,6 +714,7 @@ class _HomeState extends State<Home> {
   }
 
   final feedController=Get.find<FeedController>();
+  final myStoryController=Get.find<MyStoryController>();
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -799,90 +804,232 @@ class _HomeState extends State<Home> {
                   ),
 
                   // 2. Horizontal Story List Section
+
+                  // 2. Horizontal Story List Section
                   SliverToBoxAdapter(
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: width >= 1024 ? 0.w : landescape ? 0 : 5.w),
-                          child: SizedBox(
-                            height: cardHeight,
-                            child: ListView.builder(
-                              padding: EdgeInsets.zero,
-                              scrollDirection: Axis.horizontal,
-                              itemCount: homeStory.length + 1,
-                              itemBuilder: (context, index) {
-                                if (index == 0) {
+                    child: Obx(() {
+                      final stories = myStoryController.storiesRow.value?.data?.items
+                          .where((item) => item.user.isMe != true)
+                          .toList() ??
+                          [];
+
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: width >= 1024 ? 0.w : landescape ? 0 : 5.w,
+                            ),
+                            child: SizedBox(
+                              height: cardHeight,
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                scrollDirection: Axis.horizontal,
+                                itemCount: stories.length + 1,
+                                itemBuilder: (context, index) {
+                                  // Create a story card
+                                  if (index == 0) {
+                                    return GestureDetector(
+                                      onTap: () async {
+                                        final result = await Get.to(() => MyStoryScreen());
+                                        if (result != null) {
+                                          print("Selected story image: $result");
+                                        }
+                                      },
+                                      child: Container(
+                                        width: cardWidth,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(10.sp),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Color(0x1A000000),
+                                              offset: Offset(0, 0),
+                                              blurRadius: 10,
+                                            ),
+                                          ],
+                                        ),
+                                        child: IntrinsicHeight(
+                                          child: Column(
+                                            children: [
+                                              Expanded(
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.only(
+                                                    topLeft: Radius.circular(10.sp),
+                                                    topRight: Radius.circular(10.sp),
+                                                  ),
+                                                  child: Image.asset(
+                                                    "assets/images/profileimg.webp",
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: cardWidth * 0.40,
+                                                child: Stack(
+                                                  clipBehavior: Clip.none,
+                                                  alignment: Alignment.center,
+                                                  children: [
+                                                    Padding(
+                                                      padding: EdgeInsets.only(
+                                                        top: cardWidth * 0.07,
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          "Create a story",
+                                                          style: Appthemestyle.poppins(
+                                                            fontSize:
+                                                            12.sp.clamp(6.0, 12.0),
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      top: landescape
+                                                          ? -(cardWidth * 0.12)
+                                                          : -(cardWidth * 0.10),
+                                                      child: Container(
+                                                        width: cardWidth * 0.27,
+                                                        height: cardWidth * 0.27,
+                                                        decoration: const BoxDecoration(
+                                                          color: Colors.black,
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                        child: Icon(
+                                                          Icons.add,
+                                                          color: Colors.white,
+                                                          size: cardWidth * 0.20,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  // API story data
+                                  final item = stories[index - 1];
+                                  final storyName = item.user.name ?? 'Artist';
+                                  final storyImage = item.user.avatarUrl;
+                                  final mediaUrl = item.stories.isNotEmpty
+                                      ? item.stories.first.mediaUrl
+                                      : null;
+                                  final storyAvatar = item.user.avatar;
                                   return GestureDetector(
-                                    onTap: () async {
-                                      final result = await Get.to(() => MyStoryScreen());
-                                      if (result != null) {
-                                        print("Selected story image: $result");
+                                    onTap: () {
+                                      if (mediaUrl != null && mediaUrl.isNotEmpty) {
+                                        Get.to(
+                                              () => StoryScreen(
+                                            storyImage: mediaUrl,
+                                            storyName: storyName,
+                                                storyAvatar: storyAvatar??'',
+                                          ),
+                                        );
                                       }
                                     },
                                     child: Container(
                                       width: cardWidth,
+                                      margin: EdgeInsets.only(left: 2.w),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
                                         borderRadius: BorderRadius.circular(10.sp),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                            color: Color(0x1A000000),
-                                            offset: Offset(0, 0),
-                                            blurRadius: 10,
-                                          ),
-                                        ],
                                       ),
-                                      child: IntrinsicHeight(
-                                        child: Column(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10.sp),
+                                        child: Stack(
+                                          fit: StackFit.expand,
                                           children: [
-                                            Expanded(
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(10.sp),
-                                                  topRight: Radius.circular(10.sp),
-                                                ),
-                                                child: Image.asset(
-                                                  "assets/images/profileimg.webp",
-                                                  width: double.infinity,
-                                                  fit: BoxFit.cover,
+                                            // Story media as background
+                                            if (mediaUrl != null && mediaUrl.isNotEmpty)
+                                              Image.network(
+                                                mediaUrl,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  return Image.asset(
+                                                    "assets/images/profileimg.webp",
+                                                    fit: BoxFit.cover,
+                                                  );
+                                                },
+                                              )
+                                            else
+                                              Image.asset(
+                                                "assets/images/profileimg.webp",
+                                                fit: BoxFit.cover,
+                                              ),
+
+                                            // Bottom gradient
+                                            Positioned(
+                                              left: 0,
+                                              right: 0,
+                                              bottom: 0,
+                                              height: cardWidth * 0.30,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: [
+                                                      Colors.transparent,
+                                                      Colors.black.withOpacity(0.65),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                            SizedBox(
-                                              height: landescape ? cardWidth * 0.40 : cardWidth * 0.40,
-                                              child: Stack(
-                                                clipBehavior: Clip.none,
-                                                alignment: Alignment.center,
-                                                children: [
-                                                  Padding(
-                                                    padding: EdgeInsets.only(top: cardWidth * 0.07),
-                                                    child: Center(
-                                                      child: Text(
-                                                        "Create a story",
-                                                        style: Appthemestyle.poppins(
-                                                          fontSize: 12.sp.clamp(6.0, 12.0),
-                                                          color: Colors.black,
-                                                        ),
-                                                      ),
-                                                    ),
+
+                                            // User profile image
+                                            Positioned(
+                                              top: cardWidth * 0.05,
+                                              left: cardWidth * 0.08,
+                                              child: Container(
+                                                width: cardWidth * 0.27,
+                                                height: cardWidth * 0.27,
+                                                padding: EdgeInsets.all(cardWidth * 0.013),
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Colors.white,
+                                                ),
+                                                child: ClipOval(
+                                                  child: storyImage != null &&
+                                                      storyImage.isNotEmpty
+                                                      ? Image.network(
+                                                    storyImage,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder:
+                                                        (context, error, stackTrace) {
+                                                      return Image.asset(
+                                                        "assets/images/profileimg.webp",
+                                                        fit: BoxFit.cover,
+                                                      );
+                                                    },
+                                                  )
+                                                      : Image.asset(
+                                                    "assets/images/profileimg.webp",
+                                                    fit: BoxFit.cover,
                                                   ),
-                                                  Positioned(
-                                                    top: landescape ? -(cardWidth * 0.12) : -(cardWidth * 0.10),
-                                                    child: Container(
-                                                      width: cardWidth * 0.27,
-                                                      height: cardWidth * 0.27,
-                                                      decoration: const BoxDecoration(
-                                                        color: Colors.black,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      child: Icon(
-                                                        Icons.add,
-                                                        color: Colors.white,
-                                                        size: cardWidth * 0.20,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
+                                                ),
+                                              ),
+                                            ),
+
+                                            // User name
+                                            Positioned(
+                                              left: cardWidth * 0.08,
+                                              right: cardWidth * 0.04,
+                                              bottom: cardWidth * 0.05,
+                                              child: Text(
+                                                storyName,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Appthemestyle.poppins(
+                                                  color: Colors.white,
+                                                  fontSize: 12.sp.clamp(6.0, 12.0),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -890,94 +1037,14 @@ class _HomeState extends State<Home> {
                                       ),
                                     ),
                                   );
-                                }
-
-                                final item = homeStory[index - 1];
-                                return GestureDetector(
-                                  onTap: () {
-                                    Get.to(
-                                          () => StoryScreen(
-                                        storyImage: item['storyimg']!,
-                                        storyName: item['name']!,
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    width: cardWidth,
-                                    margin: EdgeInsets.only(left: 2.w),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10.sp),
-                                      image: DecorationImage(
-                                        image: AssetImage(item['storyimg']!),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    child: Stack(
-                                      children: [
-                                        Positioned(
-                                          left: 0,
-                                          right: 0,
-                                          bottom: 0,
-                                          height: cardWidth * 0.30,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.only(
-                                                bottomLeft: Radius.circular(10.sp),
-                                                bottomRight: Radius.circular(10.sp),
-                                              ),
-                                              gradient: LinearGradient(
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                                colors: [
-                                                  Colors.transparent,
-                                                  Colors.black.withOpacity(0.65),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          top: cardWidth * 0.05,
-                                          left: cardWidth * 0.08,
-                                          child: Container(
-                                            width: cardWidth * 0.27,
-                                            height: cardWidth * 0.27,
-                                            padding: EdgeInsets.all(cardWidth * 0.013),
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                            ),
-                                            child: ClipOval(
-                                              child: Image.asset(
-                                                item['storyimg']!,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          left: cardWidth * 0.08,
-                                          bottom: cardWidth * 0.05,
-                                          child: Text(
-                                            item['name']!,
-                                            style: Appthemestyle.poppins(
-                                              color: Colors.white,
-                                              fontSize: 12.sp.clamp(6.0, 12.0),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 2.h),
-                      ],
-                    ),
+                          SizedBox(height: 2.h),
+                        ],
+                      );
+                    }),
                   ),
 
                   // 3. Optimized Posts Feed using SliverList

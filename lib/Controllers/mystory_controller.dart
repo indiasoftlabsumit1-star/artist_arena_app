@@ -1,10 +1,13 @@
 import 'dart:io';
 
-import 'package:artist_arena_app/Controllers/profile_controller.dart';
+import 'package:artist_arena_app/Service/apiService.dart';
 import 'package:camera/camera.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../Models/storyModel.dart';
+import '../Models/uploadModel.dart';
 
 class MyStoryController extends GetxController {
   CameraController? cameraController;
@@ -12,12 +15,14 @@ class MyStoryController extends GetxController {
   RxBool isCameraInitialized = false.obs;
   RxBool isFrontCamera = false.obs;
   RxBool isFlashOn = false.obs;
-
+  RxBool isUploadingStory = false.obs;
+final Apiservice apiService =Apiservice();
+  Rxn<UploadFileModel> uploadedStory = Rxn<UploadFileModel>();
   RxList<AssetEntity> recentImages = <AssetEntity>[].obs;
+  final Rxn<StoriesRowModel> storiesRow = Rxn<StoriesRowModel>();
 
   List<CameraDescription> cameras = [];
 
-  final profileController=Get.find<ProfileController>();
 
   @override
   void onInit() {
@@ -232,6 +237,128 @@ class MyStoryController extends GetxController {
       return null;
     }
   }
+  Future<bool> uploadStory(String filePath) async {
+    if (isUploadingStory.value) {
+      return false;
+    }
+
+    final file = File(filePath);
+
+    if (!await file.exists()) {
+      Get.snackbar(
+        'Error',
+        'Selected image file not found.',
+      );
+      return false;
+    }
+
+    try {
+      isUploadingStory.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'Please login again.',
+        );
+        return false;
+      }
+
+      final response = await apiService.storyUpload(
+        token: token,
+        file: file,
+      );
+
+      if (response.success && response.data != null) {
+        uploadedStory.value = response;
+
+        Get.snackbar(
+          'Success',
+          response.message,
+        );
+
+        return true;
+      } else {
+        Get.snackbar(
+          'Error',
+          response.message.isNotEmpty
+              ? response.message
+              : 'Failed to upload story.',
+        );
+
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        e.toString(),
+      );
+
+      return false;
+    } finally {
+      isUploadingStory.value = false;
+    }
+  }
+
+  Future<bool> createStory({
+    required String media,
+  }) async {
+    try {
+      isUploadingStory.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        throw Exception("Authentication token not found");
+      }
+
+      final response = await apiService.createStory(
+        token: token,
+        media: media,
+      );
+
+      if (response.status) {
+        Get.snackbar("Success", response.message);
+        return true;
+      }
+
+      Get.snackbar("Error", response.message);
+      return false;
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+      return false;
+    } finally {
+      isUploadingStory.value = false;
+    }
+  }
+
+
+  Future<void> fetchStories() async {
+    try {
+      isUploadingStory.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        throw Exception("Authentication token not found");
+      }
+
+      final response = await apiService.getStories(
+        token: token,
+      );
+
+      storiesRow.value = response;
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    } finally {
+      isUploadingStory.value = false;
+    }
+  }
+
 
   @override
   void onClose() {

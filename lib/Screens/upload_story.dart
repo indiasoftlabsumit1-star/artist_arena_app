@@ -9,13 +9,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
 
+import '../Controllers/mystory_controller.dart';
+import 'home_screen.dart';
+
 class UploadStory extends StatelessWidget {
   final String imagePath;
+  final String mediaPath;
 
-  const UploadStory({
+   UploadStory({
     super.key,
-    required this.imagePath,
+    required this.imagePath, required this.mediaPath,
   });
+
+  final  controller =
+  Get.find<MyStoryController>();
 
   @override
   Widget build(BuildContext context) {
@@ -62,10 +69,15 @@ class UploadStory extends StatelessWidget {
             right: 0,
             child: Center(
               child: GestureDetector(
-                onTap: () {
-                  Get.back(
-                    result: imagePath,
+                onTap: () async{
+                  final success = await controller.createStory(
+                    media: mediaPath,
+
                   );
+
+                  if (success) {
+                    Get.offAll(() => Home());
+                  }
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(
@@ -90,6 +102,17 @@ class UploadStory extends StatelessWidget {
               ),
             ),
           ),
+          if (controller.isUploadingStory.value)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.7),
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

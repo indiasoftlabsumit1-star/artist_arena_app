@@ -13,8 +13,8 @@ import '../Controllers/mystory_controller.dart';
 class MyStoryScreen extends StatelessWidget {
   MyStoryScreen({super.key});
 
-  final MyStoryController controller =
-  Get.put(MyStoryController());
+  final  controller =
+  Get.find<MyStoryController>();
 
   @override
   Widget build(BuildContext context) {
@@ -98,15 +98,19 @@ class MyStoryScreen extends StatelessWidget {
 
                               return GestureDetector(
                                 onTap: () async {
-                                  final path =
-                                  await controller.selectImage(image);
+                                  final path = await controller.selectImage(image);
 
                                   if (path != null) {
-                                    Get.to(
-                                          () => UploadStory(
-                                        imagePath: path,
-                                      ),
-                                    );
+                                    final success = await controller.uploadStory(path);
+
+                                    if (success) {
+                                      Get.to(
+                                            () => UploadStory(
+                                              imagePath: path,
+                                              mediaPath: controller.uploadedStory.value!.data!.path,
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                                 child: Container(
@@ -202,15 +206,19 @@ class MyStoryScreen extends StatelessWidget {
                               Center(
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final path =
-                                    await controller.takePhoto();
+                                    final path = await controller.takePhoto();
 
                                     if (path != null) {
-                                      Get.to(
-                                            () => UploadStory(
-                                          imagePath: path,
-                                        ),
-                                      );
+                                      final success = await controller.uploadStory(path);
+
+                                      if (success) {
+                                        Get.to(
+                                              () => UploadStory(
+                                                imagePath: path,
+                                                mediaPath: controller.uploadedStory.value!.data!.path,
+                                          ),
+                                        );
+                                      }
                                     }
                                   },
                                   child: Container(
@@ -263,6 +271,18 @@ class MyStoryScreen extends StatelessWidget {
                   ],
                 ),
               ),
+
+              if (controller.isUploadingStory.value)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.7),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           );
         },

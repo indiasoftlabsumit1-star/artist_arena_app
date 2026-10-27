@@ -127,7 +127,8 @@ print("response fedd apiu  :$response");
 
       if (response.status == true && response.data != null) {
         feedList[index].isLiked =
-            response.data!.isLiked ?? true;
+            response.data!.isLiked ?? false
+        ;
 
         feedList[index].likesCount =
             response.data!.likesCount ??

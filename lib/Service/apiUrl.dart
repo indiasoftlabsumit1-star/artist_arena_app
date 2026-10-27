@@ -34,6 +34,11 @@ static const upload="${baseUrl}upload";
       return   '${baseUrl}posts/$postId/comments';
    }
    static const  post = "${baseUrl}posts/create";
+   static const  createStory = "${baseUrl}stories/create";
+   static const stories="${baseUrl}stories";
+
+
+
 
 
 

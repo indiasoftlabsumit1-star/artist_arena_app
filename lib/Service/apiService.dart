@@ -17,6 +17,8 @@ import 'package:artist_arena_app/Models/verifyOTP.dart';
 import 'package:artist_arena_app/Service/apiUrl.dart';
 import 'package:http/http.dart' as http;
 
+import '../Models/createStoryModel.dart';
+import '../Models/storyModel.dart';
 import '../Models/uploadModel.dart';
 
 class Apiservice {
@@ -243,6 +245,47 @@ Future<UploadFileModel> uploadPostMedia(
   } else {
     throw Exception(
       data["message"] ?? "Failed to upload post media",
+    );
+  }
+}
+
+Future<UploadFileModel>  storyUpload({
+ required String token,
+      required File file
+})async{
+
+  final  request=http.MultipartRequest('POST',Uri.parse( Apiurl.upload),
+
+  );
+  request.headers.addAll({
+    "Accept": "application/json",
+    "Authorization": "Bearer $token",
+  });
+  request.fields['folder'] = 'stories';
+
+  request.files.add(
+    await http.MultipartFile.fromPath(
+      'file',
+      file.path,
+    ),
+  );
+
+  final streamedResponse = await request.send();
+  final response = await http.Response.fromStream(
+    streamedResponse,
+  );
+
+  print("story upload status: ${response.statusCode}");
+  print(" story media upload body: ${response.body}");
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200 ||
+      response.statusCode == 201) {
+    return UploadFileModel.fromJson(data);
+  } else {
+    throw Exception(
+      data["message"] ?? "Failed to upload story media",
     );
   }
 }
@@ -540,4 +583,71 @@ Future<CreatePostModel> post({
   }
 
 }
+
+
+
+Future<CreateStoryModel> createStory({
+  required String token,
+  required String media,
+   String caption='Good vibes only ✨',
+}) async {
+  final response = await http.post(
+    Uri.parse(Apiurl.createStory),
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $token",
+    },
+    body: jsonEncode({
+      "media": media,
+      "caption": caption,
+    }),
+  );
+
+  print("Create story status: ${response.statusCode}");
+  print("Create story response: ${response.body}");
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200 || response.statusCode == 201) {
+    return CreateStoryModel.fromJson(data);
+  } else {
+    throw Exception(
+      data["message"] ?? "Failed to create story",
+    );
+  }
+}
+
+Future<StoriesRowModel> getStories({
+  required String token,
+   int followingOnly=0,
+}) async {
+  final uri = Uri.parse(Apiurl.stories).replace(
+    queryParameters: {
+      'following_only': followingOnly.toString(),
+    },
+  );
+
+  final response = await http.get(
+    uri,
+    headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer $token",
+    },
+  );
+
+  print("Stories row status: ${response.statusCode}");
+  print("Stories row response: ${response.body}");
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200) {
+    return StoriesRowModel.fromJson(data);
+  } else {
+    throw Exception(
+      data["message"] ?? "Failed to fetch stories",
+    );
+  }
+}
+
 }
