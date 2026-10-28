@@ -29,92 +29,130 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
   final RxBool loading= false.obs;
   final profileController=Get.find<ProfileController>();
 
-  Future<void>  getFeed()async{
 
-    try{
-      final pref=await SharedPreferences.getInstance();
-      final token=pref.getString('token');
-
-      if(token==null||token.isEmpty){
-        print("token not found ");
-        return;
-      }
-      final response=await apiservice.getFeed(token: token);
-feedList.value=response.data.items;
-print("response fedd apiu  :$response");
-    }
-    catch(e){
-      print(e);
+  void showApiError(String action, Object error) {
+    if (error is SocketException) {
+      Get.snackbar(
+        'No Internet',
+        'Please check your internet connection.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      Get.snackbar(
+        'Error',
+        'Unable to $action. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
 
+    print('$action failed: $error');
   }
+  Future<void> getFeed() async {
+    try {
+      loading.value = true;
 
+      final pref = await SharedPreferences.getInstance();
+      final token = pref.getString('token');
 
-  Future<void> getComment(int postId)async{
-
-
-    try{
-     loading.value=true;
-      final pref=await SharedPreferences.getInstance();
-      final token=pref.getString('token');
-
-      if(token==null||token.isEmpty){
-        print("token not found");
-        return ;
-      }
-
-      final response=await apiservice.getComment(token: token, postId: postId);
-      commentList.value=response.data.items;
-      print(" response comment :  $response");
-    }catch(e){
-      print("comment api error : $e");
-    }
-    finally{
-      loading.value=false;
-    }
-  }
-
-
-  Future<void> getLikes(int postId)async{
-
-
-    try{
-      loading.value=true;
-
-      final pref=await SharedPreferences.getInstance();
-      final token=pref.getString('token');
-
-      if(token==null||token.isEmpty){
-        print("token not found");
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          'Login Required',
+          'Please login again to view your feed.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
-      final response=await apiservice.getLikes(token: token, postId: postId);
-      likeItem.value=response.data.items;
-      print('likes api response : $response');
-    }catch(e){
-      print(" likes api error : $e");
-    }finally{
-      loading.value=false;
+      final response = await apiservice.getFeed(
+        token: token,
+      );
+
+      feedList.value = response.data.items;
+    } catch (e) {
+      showApiError('load feed', e);
+    } finally {
+      loading.value = false;
+    }
+  }Future<void> getComment(int postId) async {
+    try {
+      loading.value = true;
+
+      final pref = await SharedPreferences.getInstance();
+      final token = pref.getString('token');
+
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          'Login Required',
+          'Please login again to view comments.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final response = await apiservice.getComment(
+        token: token,
+        postId: postId,
+      );
+
+      commentList.value = response.data.items;
+    } catch (e) {
+      showApiError('load comments', e);
+    } finally {
+      loading.value = false;
     }
   }
-  Future<void> like(int postId) async {
+
+  Future<void> getLikes(int postId) async {
+    try {
+      loading.value = true;
+
+      final pref = await SharedPreferences.getInstance();
+      final token = pref.getString('token');
+
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          'Login Required',
+          'Please login again to view likes.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final response = await apiservice.getLikes(
+        token: token,
+        postId: postId,
+      );
+
+      likeItem.value = response.data.items;
+    } catch (e) {
+      showApiError('load likes', e);
+    } finally {
+      loading.value = false;
+    }
+  }Future<void> like(int postId) async {
     try {
       final pref = await SharedPreferences.getInstance();
       final token = pref.getString('token');
 
       if (token == null || token.isEmpty) {
-        print('token not found');
+        Get.snackbar(
+          'Login Required',
+          'Please login again to like this post.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
-      // Find the post index in feedList
       final index = feedList.indexWhere(
             (post) => post.id == postId,
       );
 
       if (index == -1) {
-        print('Post not found: $postId');
+        Get.snackbar(
+          'Error',
+          'Post not found. Please refresh your feed.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
@@ -127,43 +165,53 @@ print("response fedd apiu  :$response");
 
       if (response.status == true && response.data != null) {
         feedList[index].isLiked =
-            response.data!.isLiked ?? false
-        ;
+            response.data!.isLiked ?? true;
 
         feedList[index].likesCount =
             response.data!.likesCount ??
                 feedList[index].likesCount;
 
         feedList.refresh();
-
-        print('Post liked successfully');
+      } else {
+        Get.snackbar(
+          'Error',
+          'Unable to like this post. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
-      print('Like API error: $e');
+      showApiError('like post', e);
     }
   }
-
   Future<void> unLike(int postId) async {
     try {
       final pref = await SharedPreferences.getInstance();
       final token = pref.getString('token');
 
       if (token == null || token.isEmpty) {
-        print('token not found');
+        Get.snackbar(
+          'Login Required',
+          'Please login again to unlike this post.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
-      // Find the post index in feedList
       final index = feedList.indexWhere(
             (post) => post.id == postId,
       );
 
       if (index == -1) {
-        print('Post not found: $postId');
+        Get.snackbar(
+          'Error',
+          'Post not found. Please refresh your feed.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
       if (!feedList[index].isLiked) return;
+
       final response = await apiservice.unLike(
         token: token,
         postId: postId,
@@ -178,14 +226,17 @@ print("response fedd apiu  :$response");
                 feedList[index].likesCount;
 
         feedList.refresh();
-
-        print('Post unliked successfully');
+      } else {
+        Get.snackbar(
+          'Error',
+          'Unable to unlike this post. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
-      print('unLike API error: $e');
+      showApiError('unlike post', e);
     }
   }
-
   Future<void> addComment({
     required int postId,
     required String comment,
@@ -195,12 +246,20 @@ print("response fedd apiu  :$response");
       final token = pref.getString('token');
 
       if (token == null || token.isEmpty) {
-        print('token not found');
+        Get.snackbar(
+          'Login Required',
+          'Please login again to add a comment.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
       if (comment.trim().isEmpty) {
-        print('Comment cannot be empty');
+        Get.snackbar(
+          'Empty Comment',
+          'Please enter a comment first.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
@@ -210,7 +269,8 @@ print("response fedd apiu  :$response");
         comment: comment.trim(),
       );
 
-      if (response.status == true && response.data?.comment != null) {
+      if (response.status == true &&
+          response.data?.comment != null) {
         commentList.add(response.data!.comment!);
 
         final index = feedList.indexWhere(
@@ -220,14 +280,17 @@ print("response fedd apiu  :$response");
         if (index != -1) {
           feedList[index].commentsCount =
               response.data!.commentsCount;
-
           feedList.refresh();
         }
-
-        print('Comment added successfully');
+      } else {
+        Get.snackbar(
+          'Error',
+          'Unable to add comment. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
-      print('Add comment API error: $e');
+      showApiError('add comment', e);
     }
   }
 
@@ -236,27 +299,29 @@ print("response fedd apiu  :$response");
   final Rxn<XFile> selectedMedia = Rxn<XFile>();
   String? uploadedPostMediaPath;
 
-
   Future<void> pickFromGallery() async {
-    final XFile? file = await picker.pickMedia();
-
-    if (file == null) return;
-
-    selectedMedia.value = file;
-
     try {
+      final XFile? file = await picker.pickMedia();
+
+      if (file == null) return;
+
       final pref = await SharedPreferences.getInstance();
       final token = pref.getString('token');
 
       if (token == null || token.isEmpty) {
-        Get.snackbar('Error', 'Please login again');
+        Get.snackbar(
+          'Login Required',
+          'Please login again to upload media.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
       loading.value = true;
-      print('Selected media path: ${file.path}');
-      print('Selected media type: ${file.mimeType}');
-      print('Selected media size: ${await File(file.path).length()} bytes');
+
+      selectedMedia.value = file;
+      uploadedPostMediaPath = null;
+
       final response = await apiservice.uploadPostMedia(
         token,
         File(file.path),
@@ -264,49 +329,64 @@ print("response fedd apiu  :$response");
 
       if (response.success && response.data != null) {
         uploadedPostMediaPath = response.data!.path;
-        print('Uploaded post media path: $uploadedPostMediaPath');
       } else {
-        Get.snackbar('Error', 'Media upload failed');
+        uploadedPostMediaPath = null;
+
+        Get.snackbar(
+          'Upload Failed',
+          'Unable to upload media. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
-      print('Post media upload error: $e');
-      Get.snackbar('Error', 'Unable to upload image or video');
+      uploadedPostMediaPath = null;
+      showApiError('upload media', e);
     } finally {
       loading.value = false;
     }
   }
-
   Future<void> post({
     required String caption,
-    required List<String> media
-})async{
+    required List<String> media,
+  }) async {
+    try {
+      loading.value = true;
 
-         try{
+      final pref = await SharedPreferences.getInstance();
+      final token = pref.getString('token');
 
-           loading.value=true;
-          final  pref=await SharedPreferences.getInstance();
-          final token=pref.getString('token');
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          'Login Required',
+          'Please login again to create a post.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
 
-          if(token==null||token.isEmpty){
-            print("token not found");
-            return;
-          }
+      final response = await apiservice.post(
+        token: token,
+        caption: caption,
+        media: media,
+      );
 
-          final response=await apiservice.post(token: token, caption: caption, media: media);
-          if (response.status && response.data != null) {
-            feedList.insert(0, response.data!);
-            feedList.refresh();
-            selectedMedia.value = null;
+      if (response.status && response.data != null) {
+        feedList.insert(0, response.data!);
+        selectedMedia.value = null;
 
-            Get.back();
-
-            print('Post created successfully');
-    }}
-          catch(e){
-      print(e);
-    }finally{
-           loading.value=false;
-         }
+        Get.back();
+      } else {
+        Get.snackbar(
+          'Error',
+          'Unable to create post. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      showApiError('create post', e);
+    } finally {
+      loading.value = false;
+    }
   }
     @override
     void onClose() {
