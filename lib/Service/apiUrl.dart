@@ -36,6 +36,8 @@ static const upload="${baseUrl}upload";
    static const  post = "${baseUrl}posts/create";
    static const  createStory = "${baseUrl}stories/create";
    static const stories="${baseUrl}stories";
+   static const myStories="${baseUrl}stories/my";
+
 
 
 

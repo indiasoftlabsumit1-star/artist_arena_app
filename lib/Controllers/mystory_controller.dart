@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:artist_arena_app/Models/myStoryModel.dart';
 import 'package:artist_arena_app/Service/apiService.dart';
 import 'package:camera/camera.dart';
 import 'package:get/get.dart';
@@ -28,6 +29,7 @@ final Apiservice apiService =Apiservice();
 
   RxBool isLoadingGallery = false.obs;
   final Rxn<StoriesRowModel> storiesRow = Rxn<StoriesRowModel>();
+  final Rxn<MyStoryModel> myStories=Rxn<MyStoryModel>();
   int currentGalleryPage = 0;
   final int galleryPageSize = 100;
 
@@ -443,6 +445,29 @@ final Apiservice apiService =Apiservice();
       Get.snackbar("Error", e.toString());
     } finally {
       isUploadingStory.value = false;
+    }
+  }
+
+  Future<void> myStory()async{
+
+
+    try
+
+        {
+          isUploadingStory.value=true;
+          final pref=await SharedPreferences.getInstance();
+          final token=pref.getString('token');
+
+          if(token==null||token.isEmpty){
+            print('token not found');
+            return;
+          }
+          final response=await apiService.myAStory(token);
+          myStories.value=response;
+        }catch(e){
+      Get.snackbar('My Story', "$e");
+    }finally{
+      isUploadingStory.value=false;
     }
   }
 

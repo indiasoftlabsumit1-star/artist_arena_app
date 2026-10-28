@@ -47,6 +47,7 @@ final profileController=Get.put(ProfileController());
   profileController.getProfile();
   feedController.getFeed();
   myStoryController.fetchStories();
+  myStoryController.myStory();
     super.initState();
   }
   @override
@@ -474,7 +475,7 @@ class _HomeState extends State<Home> {
                             child: Text(
                               'Send',
                               style: Appthemestyle.poppins(
-                                fontSize: 9.sp,
+                                fontSize: 15.sp,
                                 fontWeight: FontWeight.w600,
                                 color: AppColores.custtombtnColor,
                               ),
@@ -813,6 +814,14 @@ class _HomeState extends State<Home> {
                           .toList() ??
                           [];
 
+                      final myStories = myStoryController.myStories.value?.data ?? [];
+
+                      final hasMyStory = myStories.any((item) => item.isMine);
+
+                      final myStoryImage = hasMyStory
+                          ? myStories.lastWhere((item) => item.isMine).mediaUrl
+                          : null;
+
                       return Column(
                         children: [
                           Padding(
@@ -829,10 +838,22 @@ class _HomeState extends State<Home> {
                                   // Create a story card
                                   if (index == 0) {
                                     return GestureDetector(
-                                      onTap: () async {
-                                        final result = await Get.to(() => MyStoryScreen());
-                                        if (result != null) {
-                                          print("Selected story image: $result");
+                                      onTap: () {
+                                        if (hasMyStory) {
+                                          final myStory = myStories.lastWhere(
+                                                (item) => item.isMine,
+                                          );
+
+                                          Get.to(
+                                                () => StoryScreen(
+                                              storyImage: myStory.mediaUrl,
+                                              storyName: 'My Story',
+                                              storyAvatar: myStoryImage ?? '',
+                                              stories: myStories,
+                                            ),
+                                          );
+                                        } else {
+                                          Get.to(() => MyStoryScreen());
                                         }
                                       },
                                       child: Container(
@@ -857,11 +878,24 @@ class _HomeState extends State<Home> {
                                                     topLeft: Radius.circular(10.sp),
                                                     topRight: Radius.circular(10.sp),
                                                   ),
-                                                  child: Image.asset(
-                                                    "assets/images/profileimg.webp",
-                                                    width: double.infinity,
-                                                    fit: BoxFit.cover,
-                                                  ),
+                                                  child: myStoryImage != null && myStoryImage.isNotEmpty
+                                      ? Image.network(
+                                        myStoryImage,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Image.asset(
+                                            "assets/images/profileimg.webp",
+                                            width: double.infinity,
+                                            fit: BoxFit.cover,
+                                          );
+                                        },
+                                      )
+                                          : Image.asset(
+                                      "assets/images/profileimg.webp",
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
                                                 ),
                                               ),
                                               SizedBox(
@@ -885,24 +919,30 @@ class _HomeState extends State<Home> {
                                                         ),
                                                       ),
                                                     ),
-                                                    Positioned(
-                                                      top: landescape
-                                                          ? -(cardWidth * 0.12)
-                                                          : -(cardWidth * 0.10),
-                                                      child: Container(
-                                                        width: cardWidth * 0.27,
-                                                        height: cardWidth * 0.27,
-                                                        decoration: const BoxDecoration(
-                                                          color: Colors.black,
-                                                          shape: BoxShape.circle,
-                                                        ),
-                                                        child: Icon(
-                                                          Icons.add,
-                                                          color: Colors.white,
-                                                          size: cardWidth * 0.20,
+                                                     Positioned(
+                                                        top: landescape
+                                                            ? -(cardWidth * 0.12)
+                                                            : -(cardWidth * 0.10),
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            Get.to(() => MyStoryScreen());
+                                                          },
+                                                          child: Container(
+                                                            width: cardWidth * 0.27,
+                                                            height: cardWidth * 0.27,
+                                                            decoration: const BoxDecoration(
+                                                              color: Colors.black,
+                                                              shape: BoxShape.circle,
+                                                            ),
+                                                            child: Icon(
+                                                              Icons.add,
+                                                              color: Colors.white,
+                                                              size: cardWidth * 0.20,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
+
                                                   ],
                                                 ),
                                               ),
@@ -1106,6 +1146,7 @@ class _HomeState extends State<Home> {
                                   ),
                     
                                   // Post Image
+
                                   // Post Image / Video
                                   if (post.media.isNotEmpty)
                                     Builder(
@@ -1113,9 +1154,16 @@ class _HomeState extends State<Home> {
                                         final media = post.media.first;
                                         final isVideo = media.type.toLowerCase() == 'video';
 
+                                        // Fixed media height
+                                        final double mediaHeight = width >= 600 ? 420 : 350;
+
                                         if (isVideo) {
-                                          return FeedVideoPlayer(
-                                            videoUrl: media.url,
+                                          return SizedBox(
+                                            width: double.infinity,
+                                            height: mediaHeight,
+                                            child: FeedVideoPlayer(
+                                              videoUrl: media.url,
+                                            ),
                                           );
                                         }
 
@@ -1126,12 +1174,9 @@ class _HomeState extends State<Home> {
                                             width: double.infinity,
                                             fit: BoxFit.fitWidth,
                                             loadingBuilder: (context, child, loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              }
+                                              if (loadingProgress == null) return child;
 
                                               return SizedBox(
-                                                width: double.infinity,
                                                 height: 30.h,
                                                 child: const Center(
                                                   child: CircularProgressIndicator(),
@@ -1145,7 +1190,7 @@ class _HomeState extends State<Home> {
                                         );
                                       },
                                     ),
-                    
+
                                   // Like / Comment / Share
                                   Padding(
                                     padding: EdgeInsets.symmetric(

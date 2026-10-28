@@ -10,6 +10,7 @@ import 'package:artist_arena_app/Models/commentModel.dart';
 import 'package:artist_arena_app/Models/favModel.dart';
 import 'package:artist_arena_app/Models/feedModel.dart';
 import 'package:artist_arena_app/Models/likeModel,dart.dart';
+import 'package:artist_arena_app/Models/myStoryModel.dart';
 import 'package:artist_arena_app/Models/profileModel.dart';
 import 'package:artist_arena_app/Models/sendOtpModel.dart';
 import 'package:artist_arena_app/Models/signUpModel.dart';
@@ -647,6 +648,28 @@ Future<StoriesRowModel> getStories({
     throw Exception(
       data["message"] ?? "Failed to fetch stories",
     );
+  }
+}
+
+Future<MyStoryModel> myAStory(String token)async{
+
+
+  final response=await http.get(Uri.parse(Apiurl.myStories),
+  headers: {
+    "Accept": "application/json",
+    "Authorization": "Bearer $token",
+  }
+
+  );
+
+  print('my story api response status code :${response.statusCode}');
+  print('my story api response body :${response.body}');
+
+  final data=jsonDecode(response.body);
+  if(response.statusCode==200||response.statusCode==201){
+    return   MyStoryModel.fromJson(data);
+  }else{
+    throw Exception(data['message']??'fiald to load my story ');
   }
 }
 
