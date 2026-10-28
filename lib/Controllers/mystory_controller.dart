@@ -19,7 +19,20 @@ class MyStoryController extends GetxController {
 final Apiservice apiService =Apiservice();
   Rxn<UploadFileModel> uploadedStory = Rxn<UploadFileModel>();
   RxList<AssetEntity> recentImages = <AssetEntity>[].obs;
+
+  RxList<AssetPathEntity> galleryAlbums =
+      <AssetPathEntity>[].obs;
+
+  Rxn<AssetPathEntity> selectedAlbum =
+  Rxn<AssetPathEntity>();
+
+  RxBool isLoadingGallery = false.obs;
   final Rxn<StoriesRowModel> storiesRow = Rxn<StoriesRowModel>();
+  int currentGalleryPage = 0;
+  final int galleryPageSize = 100;
+
+  RxBool hasMoreGalleryMedia = true.obs;
+  RxBool isLoadingMoreGalleryMedia = false.obs;
 
   List<CameraDescription> cameras = [];
 
@@ -174,19 +187,26 @@ final Apiservice apiService =Apiservice();
     }
   }
 
+
   // ---------------- GALLERY ----------------
+
+
   Future<void> loadRecentImages() async {
     try {
+      isLoadingGallery.value = true;
+
       final PermissionState permission =
       await PhotoManager.requestPermissionExtend();
 
       if (!permission.hasAccess) {
-        // print("Gallery permission not granted");
+        Get.snackbar(
+          'Permission Required',
+          'Allow gallery access to select story media.',
+        );
         return;
       }
 
-      final FilterOptionGroup filter =
-      FilterOptionGroup(
+      final FilterOptionGroup filter = FilterOptionGroup(
         orders: [
           OrderOption(
             type: OrderOptionType.createDate,
@@ -197,34 +217,101 @@ final Apiservice apiService =Apiservice();
 
       final List<AssetPathEntity> albums =
       await PhotoManager.getAssetPathList(
-        type: RequestType.image,
-        onlyAll: true,
+        type: RequestType.common,
+        onlyAll: false,
         filterOption: filter,
       );
 
+      galleryAlbums.assignAll(albums);
+
       if (albums.isEmpty) {
-        // print("No gallery album found");
+        recentImages.clear();
+        selectedAlbum.value = null;
         return;
       }
 
-      final AssetPathEntity recentAlbum =
-          albums.first;
-
-      final List<AssetEntity> images =
-      await recentAlbum.getAssetListPaged(
-        page: 0,
-        size: 30,
+      // Recent / All media album ko pehle select karo.
+      final AssetPathEntity allMediaAlbum = albums.firstWhere(
+            (album) => album.isAll,
+        orElse: () => albums.first,
       );
 
-      recentImages.assignAll(images);
-
-      // print(
-      //   "Recent images loaded: ${recentImages.length}",
-      // );
+      await selectGalleryAlbum(allMediaAlbum);
     } catch (e) {
-      // print("Gallery Error: $e");
+      Get.snackbar(
+        'Gallery Error',
+        'Unable to load gallery albums.',
+      );
+    } finally {
+      isLoadingGallery.value = false;
     }
   }
+
+  Future<void> selectGalleryAlbum(AssetPathEntity album) async {
+    try {
+      isLoadingGallery.value = true;
+      currentGalleryPage = 0;
+      hasMoreGalleryMedia.value = true;
+
+      selectedAlbum.value = album;
+      recentImages.clear();
+
+      final List<AssetEntity> media =
+      await album.getAssetListPaged(
+        page: currentGalleryPage,
+        size: galleryPageSize,
+      );
+
+      recentImages.assignAll(media);
+      currentGalleryPage++;
+
+      hasMoreGalleryMedia.value = media.length == galleryPageSize;
+    } catch (e) {
+      Get.snackbar(
+        'Gallery Error',
+        'Unable to load selected album.',
+      );
+    } finally {
+      isLoadingGallery.value = false;
+    }
+  }
+
+  Future<void> loadMoreGalleryMedia() async {
+    if (isLoadingGallery.value ||
+        isLoadingMoreGalleryMedia.value ||
+        !hasMoreGalleryMedia.value) {
+      return;
+    }
+
+    final album = selectedAlbum.value;
+    if (album == null) return;
+
+    try {
+      isLoadingMoreGalleryMedia.value = true;
+
+      final List<AssetEntity> media =
+      await album.getAssetListPaged(
+        page: currentGalleryPage,
+        size: galleryPageSize,
+      );
+
+      if (media.isNotEmpty) {
+        recentImages.addAll(media);
+        currentGalleryPage++;
+      }
+
+      hasMoreGalleryMedia.value = media.length == galleryPageSize;
+    } catch (e) {
+      Get.snackbar(
+        'Gallery Error',
+        'Unable to load more media.',
+      );
+    } finally {
+      isLoadingMoreGalleryMedia.value = false;
+    }
+  }
+
+
   // ---------------- SELECT GALLERY IMAGE ----------------
 
   Future<String?> selectImage(AssetEntity image) async {

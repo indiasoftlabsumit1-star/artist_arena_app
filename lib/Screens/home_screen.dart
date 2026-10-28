@@ -924,13 +924,18 @@ class _HomeState extends State<Home> {
                                   return GestureDetector(
                                     onTap: () {
                                       if (mediaUrl != null && mediaUrl.isNotEmpty) {
+
+
                                         Get.to(
                                               () => StoryScreen(
-                                            storyImage: mediaUrl,
+                                            storyImage: mediaUrl ?? '',
                                             storyName: storyName,
-                                                storyAvatar: storyAvatar??'',
+                                            storyAvatar: storyAvatar ?? '',
+                                            stories: item.stories,
                                           ),
                                         );
+
+
                                       }
                                     },
                                     child: Container(

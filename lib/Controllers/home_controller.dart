@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:artist_arena_app/Service/apiService.dart';
 import 'package:get/get.dart';
