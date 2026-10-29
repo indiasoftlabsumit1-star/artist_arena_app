@@ -66,7 +66,7 @@ class MyStoryData {
 
 class StoryRowItem {
   final StoryUser user;
-  final bool hasUnseen;
+   bool hasUnseen;
   final int storiesCount;
   final String latestAt;
   final List<StoryItem> stories;
@@ -137,7 +137,7 @@ class StoryItem {
   final String mediaUrl;
   final String type;
   final String caption;
-  final bool isSeen;
+   bool isSeen;
   final bool isMine;
   final bool canDelete;
   final int viewsCount;

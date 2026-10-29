@@ -14,12 +14,14 @@ import 'package:artist_arena_app/Models/myStoryModel.dart';
 import 'package:artist_arena_app/Models/profileModel.dart';
 import 'package:artist_arena_app/Models/sendOtpModel.dart';
 import 'package:artist_arena_app/Models/signUpModel.dart';
+import 'package:artist_arena_app/Models/storySeenModel.dart';
 import 'package:artist_arena_app/Models/verifyOTP.dart';
 import 'package:artist_arena_app/Service/apiUrl.dart';
 import 'package:http/http.dart' as http;
 
 import '../Models/createStoryModel.dart';
 import '../Models/storyModel.dart';
+import '../Models/storyViewModel.dart';
 import '../Models/uploadModel.dart';
 
 class Apiservice {
@@ -670,6 +672,58 @@ Future<MyStoryModel> myAStory(String token)async{
     return   MyStoryModel.fromJson(data);
   }else{
     throw Exception(data['message']??'fiald to load my story ');
+  }
+}
+
+
+Future<StorySeenModel> storySeen({
+  required String token,
+  required int storyId,
+}) async {
+  final response = await http.post(
+    Uri.parse(Apiurl.storySeen(storyId)),
+    headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer $token",
+    },
+  );
+
+  print("Story seen status code: ${response.statusCode}");
+  print("Story seen response: ${response.body}");
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200 && data['status'] == true) {
+    return StorySeenModel.fromJson(data['data']);
+  } else {
+    throw Exception(data['message'] ?? 'Failed to mark story as seen');
+  }
+}
+
+
+Future<StoryViewModel> storyView({
+  required String token,
+  required int storyId,
+}) async {
+  final response = await http.get(
+    Uri.parse(Apiurl.storyView(storyId)),
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  print('Story viewers status code: ${response.statusCode}');
+  print('Story viewers response: ${response.body}');
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200 && data['status'] == true) {
+    return StoryViewModel.fromJson(data);
+  } else {
+    throw Exception(
+      data['message'] ?? 'Failed to fetch story viewers',
+    );
   }
 }
 

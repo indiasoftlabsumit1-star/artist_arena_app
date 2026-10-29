@@ -8,6 +8,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Models/storyModel.dart';
+import '../Models/storyViewModel.dart';
 import '../Models/uploadModel.dart';
 
 class MyStoryController extends GetxController {
@@ -38,7 +39,8 @@ final Apiservice apiService =Apiservice();
 
   List<CameraDescription> cameras = [];
 
-
+  final Rxn<StoryViewModel> storyViewers = Rxn<StoryViewModel>();
+  final RxBool isLoadingViewers = false.obs;
   @override
   void onInit() {
     super.onInit();
@@ -471,6 +473,69 @@ final Apiservice apiService =Apiservice();
     }
   }
 
+  Future<void> storySeen(int storyId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        Get.snackbar('Error', 'Please login again.');
+        return;
+      }
+
+      final response = await apiService.storySeen(
+        token: token,
+        storyId: storyId,
+      );
+
+      if (response.isSeen) {
+        final items = storiesRow.value?.data?.items;
+
+        if (items == null) return;
+
+        for (final item in items) {
+          for (final story in item.stories) {
+            if (story.id == response.storyId) {
+              story.isSeen = true;
+            }
+          }
+
+          item.hasUnseen =
+              item.stories.any((story) => !story.isSeen);
+        }
+
+        storiesRow.refresh();
+      }
+    } catch (e) {
+      Get.snackbar('Story Seen', e.toString());
+    }
+  }
+
+
+
+  Future<void> fetchStoryViewers(int storyId) async {
+    try {
+      isLoadingViewers.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        throw Exception('Authentication token not found');
+      }
+
+      final response = await apiService.storyView(
+        token: token,
+        storyId: storyId,
+      );
+
+      storyViewers.value = response;
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    } finally {
+      isLoadingViewers.value = false;
+    }
+  }
 
   @override
   void onClose() {

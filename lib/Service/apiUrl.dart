@@ -38,8 +38,12 @@ static const upload="${baseUrl}upload";
    static const stories="${baseUrl}stories";
    static const myStories="${baseUrl}stories/my";
 
-
-
+   static String storySeen(int storyId){
+      return   '${baseUrl}stories/$storyId/view';
+   }
+   static String storyView(int storyId){
+      return   '${baseUrl}stories/$storyId/viewers';
+   }
 
 
 

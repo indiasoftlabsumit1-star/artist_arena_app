@@ -1035,9 +1035,11 @@ class _HomeState extends State<Home> {
                                                 width: cardWidth * 0.27,
                                                 height: cardWidth * 0.27,
                                                 padding: EdgeInsets.all(cardWidth * 0.013),
-                                                decoration: const BoxDecoration(
+                                                decoration: BoxDecoration(
                                                   shape: BoxShape.circle,
-                                                  color: Colors.white,
+                                                  color: item.hasUnseen
+                                                      ? Colors.red
+                                                      : Colors.grey,
                                                 ),
                                                 child: ClipOval(
                                                   child: storyImage != null &&
