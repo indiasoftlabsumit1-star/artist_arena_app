@@ -44,6 +44,9 @@ static const upload="${baseUrl}upload";
    static String storyView(int storyId){
       return   '${baseUrl}stories/$storyId/viewers';
    }
+   static String deleteStory(int storyId){
+      return   '${baseUrl}stories/$storyId/delete';
+   }
 
 
 

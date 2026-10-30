@@ -727,4 +727,30 @@ Future<StoryViewModel> storyView({
   }
 }
 
+Future<void> deleteStory({
+  required String token,
+  required int storyId,
+}) async {
+  final response = await http.post(
+    Uri.parse(Apiurl.deleteStory(storyId)),
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  print('Delete story status: ${response.statusCode}');
+  print('Delete story response: ${response.body}');
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200 && data['status'] == true) {
+    return;
+  } else {
+    throw Exception(
+      data['message'] ?? 'Failed to delete story',
+    );
+  }
+}
+
 }

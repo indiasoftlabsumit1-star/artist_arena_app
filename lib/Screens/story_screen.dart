@@ -41,7 +41,8 @@ class _StoryScreenState extends State<StoryScreen>
   StoryItem get currentStory => widget.stories[currentIndex];
   bool isViewersSheetOpen = false;
   bool isCompletingStories = false;
-
+  final Set<int> seenApiRequestedStoryIds = {};
+  bool isStoryDeletedFromSheet = false;
   @override
   void initState() {
     super.initState();
@@ -85,6 +86,7 @@ class _StoryScreenState extends State<StoryScreen>
     if (currentStory.isMine) {
       controller.fetchStoryViewers(currentStory.id);
     }
+    markLastStorySeen();
 
     if (currentStory.type.toLowerCase() == 'video') {
       playVideoStory(currentStory.mediaUrl);
@@ -94,7 +96,19 @@ class _StoryScreenState extends State<StoryScreen>
       storyTimer = Timer(const Duration(seconds: 5), nextStory);
     }
   }
+  void markLastStorySeen() {
+    if (currentIndex != widget.stories.length - 1) return;
 
+    final story = currentStory;
+
+    if (story.isSeen) return;
+
+    if (!seenApiRequestedStoryIds.add(story.id)) return;
+
+    final controller = Get.find<MyStoryController>();
+
+    unawaited(controller.storySeen(story.id));
+  }
   Future<void> completeStoriesAndClose() async {
     if (isCompletingStories) return;
 
@@ -104,7 +118,8 @@ class _StoryScreenState extends State<StoryScreen>
       final controller = Get.find<MyStoryController>();
 
       for (final story in widget.stories) {
-        if (!story.isSeen) {
+        if (!story.isSeen &&
+            seenApiRequestedStoryIds.add(story.id)) {
           await controller.storySeen(story.id);
         }
       }
@@ -243,6 +258,14 @@ class _StoryScreenState extends State<StoryScreen>
                               color: Colors.grey,
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () => deleteCurrentStory(context),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -319,12 +342,67 @@ class _StoryScreenState extends State<StoryScreen>
     } finally {
       isViewersSheetOpen = false;
 
-      if (mounted && !wasPaused) {
+      if (mounted && isStoryDeletedFromSheet) {
+        isStoryDeletedFromSheet = false;
+
+        if (widget.stories.isEmpty) {
+          // No stories left, close StoryScreen and return to Home
+          Navigator.of(context).pop();
+        } else {
+          // Show next available story
+          final nextIndex = currentIndex < widget.stories.length
+              ? currentIndex
+              : widget.stories.length - 1;
+
+          showStory(nextIndex);
+        }
+      } else if (mounted && !wasPaused) {
         togglePause();
       }
     }
   }
 
+  Future<void> deleteCurrentStory(BuildContext sheetContext) async {
+    final controller = Get.find<MyStoryController>();
+    final storyId = currentStory.id;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete Story'),
+        content: const Text(
+          'Are you sure you want to delete this story?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    final success = await controller.deleteStory(storyId);
+
+    if (!success || !mounted) return;
+
+    isStoryDeletedFromSheet = true;
+
+    // Remove deleted story from current list
+    widget.stories.removeWhere((story) => story.id == storyId);
+
+    // Close only the viewers bottom sheet
+    Navigator.pop(sheetContext);
+  }
   void handleStorySwipe(DragEndDetails details) {
     final velocity = details.primaryVelocity ?? 0;
 
@@ -535,59 +613,76 @@ class _StoryScreenState extends State<StoryScreen>
                 ),
               ),
 
-          if (currentStory.isMine)
-      Positioned(
-      bottom: 1.h,
-      left: 0,
-      right: 0,
-      child: GestureDetector(
-        onTap: openStoryViewers,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.keyboard_arrow_up,
-              color: Colors.white,
-              size: 30,
-            ),
-            const SizedBox(height: 3),
-            const Text(
-              'Swipe up to see viewers',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Obx(() {
-              final data = Get.find<MyStoryController>()
-                  .storyViewers.value?.data;
 
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.remove_red_eye_outlined,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${data?.viewsCount ?? 0} views',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
+              if (currentStory.isMine)
+                Positioned(
+                  bottom: 1.h,
+                  left: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: openStoryViewers,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.keyboard_arrow_up,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          'Swipe up to see viewers',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              );
-            }),
-          ],
-        ),
-      ),
-    ),
+                )
+              else
+                Positioned(
+                  bottom: 1.h,
+                  left: 4.w,
+                  right: 4.w,
+                  child: Container(
+                    height: 5.5.h,
+                    padding: EdgeInsets.only(left: 4.w, right: 2.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Add a comment...',
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 11.sp,
+                              ),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.send_outlined,
+                          color: Colors.pinkAccent,
+                          size: 15.sp,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
-    // Caption
+
+              // Caption
               // if (story.caption.isNotEmpty)
               //   Positioned(
               //     left: 4.w,

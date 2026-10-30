@@ -536,7 +536,36 @@ final Apiservice apiService =Apiservice();
       isLoadingViewers.value = false;
     }
   }
+  Future<bool> deleteStory(int storyId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
 
+      if (token == null || token.isEmpty) {
+        throw Exception('Authentication token not found');
+      }
+
+      await apiService.deleteStory(
+        token: token,
+        storyId: storyId,
+      );
+
+      // Refresh Home stories after successful deletion
+      await fetchStories();
+
+      storyViewers.value = null;
+
+      Get.snackbar(
+        'Success',
+        'Story deleted successfully.',
+      );
+
+      return true;
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+      return false;
+    }
+  }
   @override
   void onClose() {
     final controller = cameraController;
