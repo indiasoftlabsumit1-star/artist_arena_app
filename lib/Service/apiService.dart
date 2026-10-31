@@ -23,6 +23,7 @@ import '../Models/createStoryModel.dart';
 import '../Models/storyModel.dart';
 import '../Models/storyViewModel.dart';
 import '../Models/uploadModel.dart';
+import 'apiException.dart';
 
 class Apiservice {
 
@@ -63,13 +64,14 @@ Future<SignupModel>  signUp({
     // print("signup api response status code : ${response.statusCode}");
     // print("signup api response body : ${response.body}");
 
-    final data=jsonDecode(response.body);
 
     if(response.statusCode==200||response.statusCode==201){
+      final data=jsonDecode(response.body);
+
       return    SignupModel.fromJson(data);
     }
     else{
-      throw Exception(data['message']??"failed to  signup");
+      _throwApiError(response);
     }
 }
 
@@ -93,12 +95,13 @@ Future<SendOtpModel>  sendOtp({
   // print("  send otp api status code : ${response.statusCode}");
   // print("send otp api response body : ${response.body}");
 
-  final data= jsonDecode(response.body);
   if(response.statusCode==200){
+    final data= jsonDecode(response.body);
+
     return  SendOtpModel.fromJson(data);
   }
   else{
-    throw Exception(data['message']??"failed to send otp ");
+    _throwApiError(response);
   }
 }
 
@@ -123,32 +126,31 @@ Future<SendOtpModel>  sendOtp({
   // print("singup ot verify api status code : ${response.statusCode}");
   // print("signup otp verify api response body : ${response.body}");
 
-  final data =jsonDecode(response.body);
 
   if(response.statusCode==200){
+    final data =jsonDecode(response.body);
+
     return VerifyOtpModel.fromJson(data);
   }
   else{
-    throw Exception(data["message"]??"failed to verify otp");
+    _throwApiError(response);
   }
  }
-
- Future<bool>  logOut(String token)async{
-  
-  final response=await http.post(Uri.parse(Apiurl.logOut),
-      headers: {
-        "Accept":"application/json",
-        'Authorization': 'Bearer $token',
-
-      }
+Future<bool> logOut(String token) async {
+  final response = await http.post(
+    Uri.parse(Apiurl.logOut),
+    headers: {
+      "Accept": "application/json",
+      'Authorization': 'Bearer $token',
+    },
   );
 
-  print("log out resposne :${response.statusCode}");
-  print("log out response body : ${response.body}");
-
-  // final data =jsonDecode(response.body);
-  return response.statusCode==200;
- }
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    _throwApiError(response);
+  }
+}
 
 
 
@@ -164,12 +166,13 @@ Future<SendOtpModel>  sendOtp({
 
   print("profile api response status code : ${response.statusCode}");
   print("profile api response body : ${response.body}");
-  final data=jsonDecode(response.body);
   if(response.statusCode==200){
+    final data=jsonDecode(response.body);
+
     return ProfileModel.fromJson(data);
 
   }else{
-    throw Exception(data["message"]??"failed to load profile api ");
+    _throwApiError(response);
   }
  }
 
@@ -200,12 +203,13 @@ Future<UploadFileModel> uploadFile(String token, File file) async {
   print("Upload API status code: ${response.statusCode}");
   print("Upload API response body: ${response.body}");
 
-  final data = jsonDecode(response.body);
 
   if (response.statusCode == 200 || response.statusCode == 201) {
+    final data = jsonDecode(response.body);
+
     return UploadFileModel.fromJson(data);
   } else {
-    throw Exception(data["message"] ?? "Failed to upload file");
+    _throwApiError(response);
   }
 }
 
@@ -240,15 +244,15 @@ Future<UploadFileModel> uploadPostMedia(
   print("Post media upload status: ${response.statusCode}");
   print("Post media upload body: ${response.body}");
 
-  final data = jsonDecode(response.body);
 
   if (response.statusCode == 200 ||
       response.statusCode == 201) {
+    final data = jsonDecode(response.body);
+
     return UploadFileModel.fromJson(data);
   } else {
-    throw Exception(
-      data["message"] ?? "Failed to upload post media",
-    );
+    _throwApiError(response);
+
   }
 }
 
@@ -281,15 +285,15 @@ Future<UploadFileModel>  storyUpload({
   print("story upload status: ${response.statusCode}");
   print(" story media upload body: ${response.body}");
 
-  final data = jsonDecode(response.body);
 
   if (response.statusCode == 200 ||
       response.statusCode == 201) {
+    final data = jsonDecode(response.body);
+
     return UploadFileModel.fromJson(data);
   } else {
-    throw Exception(
-      data["message"] ?? "Failed to upload story media",
-    );
+    _throwApiError(response);
+
   }
 }
 
@@ -328,13 +332,14 @@ Future<ProfileData> updateProfile({
   print("   upadte p[rofile api response status code  : ${response.statusCode}");
   print("update   profile api   response body : ${response.body}");
 
-  final data=jsonDecode(response.body);
   if(response.statusCode==200){
+    final data=jsonDecode(response.body);
+
     return ProfileData.fromJson(data);
   }
   else
     {
-      throw Exception(data['message']?? "failed to update profile ");
+      _throwApiError(response);
     }
 }
 
@@ -362,12 +367,13 @@ Future<SendOtpModel> resendOtp({
   print(" resend otp api response status code :${response.statusCode}");
   print("resend otp api response body : ${response.body}");
 
-  final data=jsonDecode(response.body);
   if(response.statusCode==200){
+    final data=jsonDecode(response.body);
+
     return   SendOtpModel.fromJson(data);
   }
   else{
-    throw Exception(data['message']??"failed to resend the otp");
+    _throwApiError(response);
   }
 }
 
@@ -400,12 +406,13 @@ Future<SendOtpModel> resendOtp({
     print('feed api response status code : ${response.statusCode}');
     print('feed api response body : ${response.body}');
 
-    final data=jsonDecode(response.body);
     if(response.statusCode==200){
+      final data=jsonDecode(response.body);
+
       return  FeedModel.fromJson(data);
     }
     else{
-      throw Exception(data['message']??'failed to load feed api ');
+      _throwApiError(response);
     }
   }
 
@@ -435,12 +442,13 @@ Future<SendOtpModel> resendOtp({
   print("comment api response  body :${response.body}");
 
 
-  final data=jsonDecode(response.body);
   if(response.statusCode==200){
+    final data=jsonDecode(response.body);
+
     return CommentListModel.fromJson(data);
   }
   else{
-    throw Exception(data['message']??'failed to load a comment');
+    _throwApiError(response);
   }
   }
 
@@ -468,12 +476,13 @@ Future<SendOtpModel> resendOtp({
   print(" likes api response status code :${response.statusCode}");
   print('likes api response body : ${response.body}');
 
-  final data=jsonDecode(response.body);
   if(response.statusCode==200){
+    final data=jsonDecode(response.body);
+
     return LikeListModel.fromJson(data);
   }
   else{
-    throw Exception(data['message']??'failed to load a likes');
+    _throwApiError(response);
   }
   }
 
@@ -494,12 +503,13 @@ Future<SendOtpModel> resendOtp({
   print("like api response status code   : ${response.statusCode}");
   print("like api response body : ${response.body}");
 
-  final data=jsonDecode(response.body);
   if(response.statusCode==200){
+    final data=jsonDecode(response.body);
+
     return LikeModel.fromJson(data);
   }
   else{
-    throw Exception(data['message']??'failed to like post');
+    _throwApiError(response);
   }
   }
 
@@ -518,12 +528,13 @@ Future<LikeModel> unLike({
   print('Unlike API status code: ${response.statusCode}');
   print('Unlike API response body: ${response.body}');
 
-  final data = jsonDecode(response.body);
 
   if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+
     return LikeModel.fromJson(data);
   } else {
-    throw Exception(data['message'] ?? 'Failed to remove like');
+    _throwApiError(response);
   }
 }
 Future<AddCommentModel>   addComment({
@@ -545,12 +556,13 @@ Future<AddCommentModel>   addComment({
   );
   print("add comment api response status code :${response.statusCode}");
   print("add comment api response body  :${response.body}");
-  final data=jsonDecode(response.body);
 
   if(response.statusCode==201){
+    final data=jsonDecode(response.body);
+
     return   AddCommentModel.fromJson(data)    ;
   }else{
-    throw Exception(data['message']??'failed to add comment');
+    _throwApiError(response);
   }
 }
 
@@ -577,12 +589,13 @@ Future<CreatePostModel> post({
   print(" post api response status code : ${response.statusCode}");
   print("post api response body :${response.body}");
 
-  final data=jsonDecode(response.body);
 
   if(response.statusCode==201){
+    final data=jsonDecode(response.body);
+
     return CreatePostModel.fromJson(data);
   }else{
-    throw Exception(data['message']??'failed to post');
+    _throwApiError(response);
   }
 
 }
@@ -610,14 +623,14 @@ Future<CreateStoryModel> createStory({
   print("Create story status: ${response.statusCode}");
   print("Create story response: ${response.body}");
 
-  final data = jsonDecode(response.body);
 
   if (response.statusCode == 200 || response.statusCode == 201) {
+    final data = jsonDecode(response.body);
+
     return CreateStoryModel.fromJson(data);
   } else {
-    throw Exception(
-      data["message"] ?? "Failed to create story",
-    );
+    _throwApiError(response);
+
   }
 }
 
@@ -642,14 +655,14 @@ Future<StoriesRowModel> getStories({
   print("Stories row status: ${response.statusCode}");
   print("Stories row response: ${response.body}");
 
-  final data = jsonDecode(response.body);
 
   if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+
     return StoriesRowModel.fromJson(data);
   } else {
-    throw Exception(
-      data["message"] ?? "Failed to fetch stories",
-    );
+    _throwApiError(response);
+
   }
 }
 
@@ -667,11 +680,12 @@ Future<MyStoryModel> myAStory(String token)async{
   print('my story api response status code :${response.statusCode}');
   print('my story api response body :${response.body}');
 
-  final data=jsonDecode(response.body);
   if(response.statusCode==200||response.statusCode==201){
+    final data=jsonDecode(response.body);
+
     return   MyStoryModel.fromJson(data);
   }else{
-    throw Exception(data['message']??'fiald to load my story ');
+    _throwApiError(response);
   }
 }
 
@@ -691,12 +705,17 @@ Future<StorySeenModel> storySeen({
   print("Story seen status code: ${response.statusCode}");
   print("Story seen response: ${response.body}");
 
-  final data = jsonDecode(response.body);
 
-  if (response.statusCode == 200 && data['status'] == true) {
-    return StorySeenModel.fromJson(data['data']);
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+
+    if (data['status'] == true) {
+      return StorySeenModel.fromJson(data['data']);
+    } else {
+      _throwApiError(response);
+    }
   } else {
-    throw Exception(data['message'] ?? 'Failed to mark story as seen');
+    _throwApiError(response);
   }
 }
 
@@ -716,14 +735,19 @@ Future<StoryViewModel> storyView({
   print('Story viewers status code: ${response.statusCode}');
   print('Story viewers response: ${response.body}');
 
-  final data = jsonDecode(response.body);
 
-  if (response.statusCode == 200 && data['status'] == true) {
-    return StoryViewModel.fromJson(data);
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+if(data['status'] == true){
+  return StoryViewModel.fromJson(data);
+
+}else{
+  _throwApiError(response);
+
+}
   } else {
-    throw Exception(
-      data['message'] ?? 'Failed to fetch story viewers',
-    );
+    _throwApiError(response);
+
   }
 }
 
@@ -742,15 +766,34 @@ Future<void> deleteStory({
   print('Delete story status: ${response.statusCode}');
   print('Delete story response: ${response.body}');
 
-  final data = jsonDecode(response.body);
 
-  if (response.statusCode == 200 && data['status'] == true) {
+  if (response.statusCode == 200 ) {
+
     return;
   } else {
-    throw Exception(
-      data['message'] ?? 'Failed to delete story',
-    );
+    _throwApiError(response);
+
   }
 }
 
+
+
+Never _throwApiError(http.Response response) {
+  String message = 'Something went wrong. Please try again.';
+
+  try {
+    final data = jsonDecode(response.body);
+
+    if (data is Map<String, dynamic> &&
+        data['message'] is String &&
+        data['message'].toString().trim().isNotEmpty) {
+      message = data['message'];
+    }
+  } catch (_) {}
+
+  throw ApiException(
+    statusCode: response.statusCode,
+    message: message,
+  );
+}
 }

@@ -15,12 +15,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Models/feedModel.dart';
+import '../Widgets/errorHandel.dart';
 
 class FeedController extends GetxController{
 
   CameraController? cameraController;
 
   final Apiservice apiservice = Apiservice();
+  final Errorhandel errorhandel = Errorhandel();
 
   final RxList<FeedItem> feedList = <FeedItem>[].obs;
 
@@ -30,23 +32,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
   final profileController=Get.find<ProfileController>();
 
 
-  void showApiError(String action, Object error) {
-    if (error is SocketException) {
-      Get.snackbar(
-        'No Internet',
-        'Please check your internet connection.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } else {
-      Get.snackbar(
-        'Error',
-        'Unable to $action. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
 
-    print('$action failed: $error');
-  }
   Future<void> getFeed() async {
     try {
       loading.value = true;
@@ -69,7 +55,10 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
 
       feedList.value = response.data.items;
     } catch (e) {
-      showApiError('load feed', e);
+      print('GET FEED ERROR TYPE: ${e.runtimeType}');
+      print('GET FEED ERROR: $e');
+
+      errorhandel.showApiError('load feed', e);
     } finally {
       loading.value = false;
     }
@@ -96,7 +85,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
 
       commentList.value = response.data.items;
     } catch (e) {
-      showApiError('load comments', e);
+      errorhandel.showApiError('load comments', e);
     } finally {
       loading.value = false;
     }
@@ -125,7 +114,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
 
       likeItem.value = response.data.items;
     } catch (e) {
-      showApiError('load likes', e);
+      errorhandel.showApiError('load likes', e);
     } finally {
       loading.value = false;
     }
@@ -180,7 +169,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
         );
       }
     } catch (e) {
-      showApiError('like post', e);
+      errorhandel.showApiError('like post', e);
     }
   }
   Future<void> unLike(int postId) async {
@@ -234,7 +223,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
         );
       }
     } catch (e) {
-      showApiError('unlike post', e);
+      errorhandel.showApiError('unlike post', e);
     }
   }
   Future<void> addComment({
@@ -290,7 +279,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
         );
       }
     } catch (e) {
-      showApiError('add comment', e);
+      errorhandel.showApiError('add comment', e);
     }
   }
 
@@ -340,7 +329,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
       }
     } catch (e) {
       uploadedPostMediaPath = null;
-      showApiError('upload media', e);
+      errorhandel.showApiError('upload media', e);
     } finally {
       loading.value = false;
     }
@@ -383,7 +372,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
         );
       }
     } catch (e) {
-      showApiError('create post', e);
+      errorhandel.showApiError('create post', e);
     } finally {
       loading.value = false;
     }

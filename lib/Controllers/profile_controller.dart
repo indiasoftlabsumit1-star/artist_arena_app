@@ -9,6 +9,8 @@ import 'package:artist_arena_app/Service/apiService.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../Widgets/errorHandel.dart';
+
 class ProfileController extends GetxController{
 
   RxInt selectedIndex = 0.obs;
@@ -19,6 +21,8 @@ Rx<ProfileData?> profile=Rx<ProfileData?>(null);
     final RxBool profileLoading=false.obs;
 
 final Apiservice apiservice=Apiservice();
+  final Errorhandel errorhandel = Errorhandel();
+
   void changeTab(int index) {
     selectedIndex.value = index;
   }
@@ -43,7 +47,8 @@ final Apiservice apiservice=Apiservice();
       print("profile api response  :$response");
     }
     catch(e){
-      print("profile pai error : $e");
+      errorhandel.showApiError('profile error', e);
+
     }finally{
       profileLoading.value=false;
     }
@@ -74,7 +79,7 @@ final Apiservice apiservice=Apiservice();
         print("File upload failed: ${response.message}");
       }
     } catch (e) {
-      print("Upload API error: $e");
+      errorhandel.showApiError('profile file  Error', e);
     } finally {
       profileLoading.value = false;
     }
@@ -119,7 +124,7 @@ final Apiservice apiservice=Apiservice();
       );
 
     }catch(e){
-      print("update profiule error : $e");
+      errorhandel.showApiError('profile update Error', e);
     }
     finally{
       profileLoading.value=false;

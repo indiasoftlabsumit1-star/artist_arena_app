@@ -17,11 +17,14 @@ import '../Models/sendOtpModel.dart';
 import '../Screens/home_screen.dart';
 import '../Screens/login_screen.dart';
 import '../Widgets/common_button_widget.dart';
+import '../Widgets/errorHandel.dart';
 
 class AuthController extends GetxController{
 
 
     final Apiservice apiservice= Apiservice();
+    final Errorhandel errorhandel = Errorhandel();
+
     final RxInt remainingSeconds = 0.obs;
     Timer? resendTimer;
 
@@ -133,12 +136,8 @@ void checkboxCheck(bool value){
           throw Exception(response.message);
         }
       } catch (e) {
-         print("Signup error: $e");
+        errorhandel.showApiError('Signup Failed', e);
 
-        Get.snackbar(
-          'Signup Failed',
-          '$e.',
-        );
       } finally {
         loading.value = false;
       }
@@ -170,12 +169,8 @@ Future<void>  sendOtp({
         Get.snackbar("send otp", response.message);
       }
     }catch (e) {
-      print("send otp error: $e");
+      errorhandel.showApiError('Send otp', e);
 
-      Get.snackbar(
-        'send otp Failed',
-        'Something went wrong. Please try again.',
-      );
     } finally {
       loading.value = false;
     }
@@ -223,12 +218,8 @@ Future<void>  sendOtp({
 
         Get.offAll(() => HomeScreen());
       } catch (e) {
-        print('OTP verification error: $e');
+        errorhandel.showApiError('otp verify ', e);
 
-        Get.snackbar(
-          'OTP Verification Failed',
-          'Something went wrong. Please try again.',
-        );
       } finally {
         loading.value = false;
       }
@@ -259,9 +250,8 @@ Future<bool>  logOut()async{
           return true;
         }
       }catch(e){
-        print(" logoput error : $e");
+        errorhandel.showApiError('log out', e);
 
-        Get.snackbar("log out", "$e");
       }
       finally {
         loading.value = false;
@@ -285,7 +275,7 @@ Future<void> resendOtp(String mobile)async{
         print("resend otp api response :${response.message}");
 
       }catch(e){
-        print("resend otp api error :$e");
+        errorhandel.showApiError('resend otp', e);
       }
 }
 // void signup(){

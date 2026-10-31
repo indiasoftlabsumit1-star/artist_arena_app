@@ -10,9 +10,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Models/storyModel.dart';
 import '../Models/storyViewModel.dart';
 import '../Models/uploadModel.dart';
+import '../Widgets/errorHandel.dart';
 
 class MyStoryController extends GetxController {
   CameraController? cameraController;
+  final Errorhandel errorhandel = Errorhandel();
+
 
   RxBool isCameraInitialized = false.obs;
   RxBool isFrontCamera = false.obs;
@@ -121,6 +124,8 @@ final Apiservice apiService =Apiservice();
     // }
     catch (e) {
       // print("CAMERA ERROR: $e");
+      errorhandel.showApiError('Camera Error', e);
+
     }
   }
   // ---------------- FRONT / BACK ----------------
@@ -168,6 +173,8 @@ final Apiservice apiService =Apiservice();
       }
     } catch (e) {
       // print("Flash Error: $e");
+      errorhandel.showApiError('Flash Error', e);
+
 
     }
   }
@@ -187,6 +194,8 @@ final Apiservice apiService =Apiservice();
       return photo.path;
     } catch (e) {
       // print("Take Photo Error: $e");
+      errorhandel.showApiError('Photo Error', e);
+
       return null;
     }
   }
@@ -382,10 +391,7 @@ final Apiservice apiService =Apiservice();
         return false;
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        e.toString(),
-      );
+      errorhandel.showApiError('Upload Story', e);
 
       return false;
     } finally {
@@ -419,7 +425,8 @@ final Apiservice apiService =Apiservice();
       Get.snackbar("Error", response.message);
       return false;
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      errorhandel.showApiError('Create Story', e);
+
       return false;
     } finally {
       isUploadingStory.value = false;
@@ -444,7 +451,7 @@ final Apiservice apiService =Apiservice();
 
       storiesRow.value = response;
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      errorhandel.showApiError('Fetch Story', e);
     } finally {
       isUploadingStory.value = false;
     }
@@ -467,7 +474,7 @@ final Apiservice apiService =Apiservice();
           final response=await apiService.myAStory(token);
           myStories.value=response;
         }catch(e){
-      Get.snackbar('My Story', "$e");
+      errorhandel.showApiError('My Story', e);
     }finally{
       isUploadingStory.value=false;
     }
@@ -507,7 +514,7 @@ final Apiservice apiService =Apiservice();
         storiesRow.refresh();
       }
     } catch (e) {
-      Get.snackbar('Story Seen', e.toString());
+      errorhandel.showApiError('Seen Story', e);
     }
   }
 
@@ -531,7 +538,7 @@ final Apiservice apiService =Apiservice();
 
       storyViewers.value = response;
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      errorhandel.showApiError(' Story  Viewer', e);
     } finally {
       isLoadingViewers.value = false;
     }
@@ -562,7 +569,7 @@ final Apiservice apiService =Apiservice();
 
       return true;
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      errorhandel.showApiError(' Story  Delete', e);
       return false;
     }
   }
