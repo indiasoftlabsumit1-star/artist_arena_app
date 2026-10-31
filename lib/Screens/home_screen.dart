@@ -281,7 +281,7 @@ class _HomeState extends State<Home> {
           width: double.infinity,
           child: Obx(
             (){
-              return feedController.loading.value?Center(child: CircularProgressIndicator())
+              return feedController.commentLoading.value?Center(child: CircularProgressIndicator())
 
 
                   :
@@ -542,7 +542,7 @@ class _HomeState extends State<Home> {
           width: double.infinity,
           child: Obx(
             (){
-              return feedController.loading.value?Center(child: CircularProgressIndicator(),):Column(
+              return feedController.likesLoading.value?Center(child: CircularProgressIndicator(),):Column(
 
                 children: [
 

@@ -258,7 +258,13 @@ Future<bool>  logOut()async{
       }
       return false;
 }
+    Future<void> clearSession() async {
+      final pref = await SharedPreferences.getInstance();
 
+      await pref.remove('token');
+
+      Get.offAll(() => LoginScreen());
+    }
 
 Future<void> resendOtp(String mobile)async{
 

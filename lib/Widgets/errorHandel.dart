@@ -1,8 +1,10 @@
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:get/get.dart';
 
+import '../Controllers/auth_controller.dart';
 import '../Service/apiException.dart';
 
 class Errorhandel {
@@ -10,7 +12,10 @@ class Errorhandel {
     String title = 'Error';
     String message = 'Unable to $action. Please try again.';
 
-    if (error is SocketException) {
+    if (error is TimeoutException) {
+      title = 'Request Timeout';
+      message = 'Server is taking too long to respond. Please try again.';
+    } else if (error is SocketException) {
       title = 'No Internet';
       message = 'Please check your internet connection.';
     } else if (error is HttpException) {
@@ -40,6 +45,8 @@ class Errorhandel {
         case 401:
           title = 'Session Expired';
           message = 'Please login again.';
+
+          Get.find<AuthController>().clearSession();
           break;
 
         case 403:

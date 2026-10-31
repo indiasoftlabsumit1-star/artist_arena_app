@@ -168,7 +168,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               ['mp4', 'mov', 'avi', 'mkv', 'webm']
                                   .contains(media.path.split('.').last.toLowerCase());
 
-                          if (controller.loading.value) {
+                          if (controller.mediaLoading.value) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );

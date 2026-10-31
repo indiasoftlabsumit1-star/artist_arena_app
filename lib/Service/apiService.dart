@@ -59,7 +59,7 @@ Future<SignupModel>  signUp({
       "Accept":"application/json",
         "Content-Type":"application/json"
       }
-    );
+    ).timeout(const Duration(seconds: 30));
     //
     // print("signup api response status code : ${response.statusCode}");
     // print("signup api response body : ${response.body}");
@@ -90,7 +90,7 @@ Future<SendOtpModel>  sendOtp({
         "Content-Type":"application/json"
       }
 
-  );
+  ).timeout(const Duration(seconds: 30));
   //
   // print("  send otp api status code : ${response.statusCode}");
   // print("send otp api response body : ${response.body}");
@@ -121,7 +121,7 @@ Future<SendOtpModel>  sendOtp({
         "Accept":"application/json",
         "Content-Type":"application/json"
       }
-  );
+  ).timeout(const Duration(seconds: 30));
   //
   // print("singup ot verify api status code : ${response.statusCode}");
   // print("signup otp verify api response body : ${response.body}");
@@ -143,7 +143,7 @@ Future<bool> logOut(String token) async {
       "Accept": "application/json",
       'Authorization': 'Bearer $token',
     },
-  );
+  ).timeout(const Duration(seconds: 30));
 
   if (response.statusCode == 200) {
     return true;
@@ -162,7 +162,7 @@ Future<bool> logOut(String token) async {
     "Accept":"application/json",
     'Authorization': 'Bearer $token',
   }
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print("profile api response status code : ${response.statusCode}");
   print("profile api response body : ${response.body}");
@@ -180,7 +180,7 @@ Future<bool> logOut(String token) async {
 Future<UploadFileModel> uploadFile(String token, File file) async {
   final request = http.MultipartRequest(
     'POST',
-    Uri.parse(Apiurl.upload),
+    Uri.parse(Apiurl.upload)
   );
 
   request.headers.addAll({
@@ -197,8 +197,8 @@ Future<UploadFileModel> uploadFile(String token, File file) async {
     ),
   );
 
-  final streamedResponse = await request.send();
-  final response = await http.Response.fromStream(streamedResponse);
+  final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+  final response = await http.Response.fromStream(streamedResponse).timeout(const Duration(seconds: 30));
 
   print("Upload API status code: ${response.statusCode}");
   print("Upload API response body: ${response.body}");
@@ -236,10 +236,10 @@ Future<UploadFileModel> uploadPostMedia(
     ),
   );
 
-  final streamedResponse = await request.send();
+  final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
   final response = await http.Response.fromStream(
     streamedResponse,
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print("Post media upload status: ${response.statusCode}");
   print("Post media upload body: ${response.body}");
@@ -277,10 +277,10 @@ Future<UploadFileModel>  storyUpload({
     ),
   );
 
-  final streamedResponse = await request.send();
+  final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
   final response = await http.Response.fromStream(
     streamedResponse,
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print("story upload status: ${response.statusCode}");
   print(" story media upload body: ${response.body}");
@@ -327,7 +327,7 @@ Future<ProfileData> updateProfile({
       "Authorization": "Bearer $token",
 
     }
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print("   upadte p[rofile api response status code  : ${response.statusCode}");
   print("update   profile api   response body : ${response.body}");
@@ -363,7 +363,7 @@ Future<SendOtpModel> resendOtp({
 
 
       }
-  );
+  ).timeout(const Duration(seconds: 30));
   print(" resend otp api response status code :${response.statusCode}");
   print("resend otp api response body : ${response.body}");
 
@@ -401,7 +401,7 @@ Future<SendOtpModel> resendOtp({
       "Accept":"application/json",
       "Authorization": "Bearer $token",
     }
-    );
+    ).timeout(const Duration(seconds: 30));
 
     print('feed api response status code : ${response.statusCode}');
     print('feed api response body : ${response.body}');
@@ -436,7 +436,7 @@ Future<SendOtpModel> resendOtp({
     "Accept":"application/json",
     "Authorization": "Bearer $token",
   }
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print("comment api response api status code : ${response.statusCode}");
   print("comment api response  body :${response.body}");
@@ -471,7 +471,7 @@ Future<SendOtpModel> resendOtp({
     "Accept":"application/json",
     "Authorization": "Bearer $token",
   }
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print(" likes api response status code :${response.statusCode}");
   print('likes api response body : ${response.body}');
@@ -497,7 +497,7 @@ Future<SendOtpModel> resendOtp({
     "Accept":"application/json",
     "Authorization": "Bearer $token",
   }
-  );
+  ).timeout(const Duration(seconds: 30));
   
   
   print("like api response status code   : ${response.statusCode}");
@@ -523,7 +523,7 @@ Future<LikeModel> unLike({
       "Accept": "application/json",
       "Authorization": "Bearer $token",
     },
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print('Unlike API status code: ${response.statusCode}');
   print('Unlike API response body: ${response.body}');
@@ -553,7 +553,7 @@ Future<AddCommentModel>   addComment({
       "Content-Type":"application/json",
       "Authorization": "Bearer $token",
     }
-  );
+  ).timeout(const Duration(seconds: 30));
   print("add comment api response status code :${response.statusCode}");
   print("add comment api response body  :${response.body}");
 
@@ -584,7 +584,7 @@ Future<CreatePostModel> post({
       "Content-Type":"application/json",
       "Authorization": "Bearer $token",
     }
-  ) ;
+  ).timeout(const Duration(seconds: 30));
 
   print(" post api response status code : ${response.statusCode}");
   print("post api response body :${response.body}");
@@ -618,7 +618,7 @@ Future<CreateStoryModel> createStory({
       "media": media,
       "caption": caption,
     }),
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print("Create story status: ${response.statusCode}");
   print("Create story response: ${response.body}");
@@ -650,7 +650,7 @@ Future<StoriesRowModel> getStories({
       "Accept": "application/json",
       "Authorization": "Bearer $token",
     },
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print("Stories row status: ${response.statusCode}");
   print("Stories row response: ${response.body}");
@@ -675,7 +675,7 @@ Future<MyStoryModel> myAStory(String token)async{
     "Authorization": "Bearer $token",
   }
 
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print('my story api response status code :${response.statusCode}');
   print('my story api response body :${response.body}');
@@ -700,7 +700,7 @@ Future<StorySeenModel> storySeen({
       "Accept": "application/json",
       "Authorization": "Bearer $token",
     },
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print("Story seen status code: ${response.statusCode}");
   print("Story seen response: ${response.body}");
@@ -730,7 +730,7 @@ Future<StoryViewModel> storyView({
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
     },
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print('Story viewers status code: ${response.statusCode}');
   print('Story viewers response: ${response.body}');
@@ -761,7 +761,7 @@ Future<void> deleteStory({
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
     },
-  );
+  ).timeout(const Duration(seconds: 30));
 
   print('Delete story status: ${response.statusCode}');
   print('Delete story response: ${response.body}');

@@ -28,14 +28,17 @@ class FeedController extends GetxController{
 
   final RxList<CommentItem> commentList=<CommentItem>[].obs;
 final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
-  final RxBool loading= false.obs;
-  final profileController=Get.find<ProfileController>();
+  final RxBool feedLoading = false.obs;
+  final RxBool commentLoading = false.obs;
+  final RxBool likesLoading = false.obs;
+  final RxBool mediaLoading = false.obs;
+  final RxBool postLoading = false.obs;  final profileController=Get.find<ProfileController>();
 
 
 
   Future<void> getFeed() async {
     try {
-      loading.value = true;
+      feedLoading.value = true;
 
       final pref = await SharedPreferences.getInstance();
       final token = pref.getString('token');
@@ -60,11 +63,11 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
 
       errorhandel.showApiError('load feed', e);
     } finally {
-      loading.value = false;
+      feedLoading.value = false;
     }
   }Future<void> getComment(int postId) async {
     try {
-      loading.value = true;
+      commentLoading.value = true;
 
       final pref = await SharedPreferences.getInstance();
       final token = pref.getString('token');
@@ -87,13 +90,13 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
     } catch (e) {
       errorhandel.showApiError('load comments', e);
     } finally {
-      loading.value = false;
+      commentLoading.value = false;
     }
   }
 
   Future<void> getLikes(int postId) async {
     try {
-      loading.value = true;
+      likesLoading.value = true;
 
       final pref = await SharedPreferences.getInstance();
       final token = pref.getString('token');
@@ -116,7 +119,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
     } catch (e) {
       errorhandel.showApiError('load likes', e);
     } finally {
-      loading.value = false;
+      likesLoading.value = false;
     }
   }Future<void> like(int postId) async {
     try {
@@ -306,7 +309,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
         return;
       }
 
-      loading.value = true;
+      mediaLoading.value = true;
 
       selectedMedia.value = file;
       uploadedPostMediaPath = null;
@@ -331,7 +334,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
       uploadedPostMediaPath = null;
       errorhandel.showApiError('upload media', e);
     } finally {
-      loading.value = false;
+      mediaLoading.value = false;
     }
   }
   Future<void> post({
@@ -339,7 +342,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
     required List<String> media,
   }) async {
     try {
-      loading.value = true;
+      postLoading.value = true;
 
       final pref = await SharedPreferences.getInstance();
       final token = pref.getString('token');
@@ -374,7 +377,7 @@ final RxList<LikeItem>  likeItem=<LikeItem>[].obs;
     } catch (e) {
       errorhandel.showApiError('create post', e);
     } finally {
-      loading.value = false;
+      postLoading.value = false;
     }
   }
     @override
